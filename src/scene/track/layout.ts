@@ -36,39 +36,8 @@ export function buildTrack(shift = new THREE.Vector3(0, 0, 0)): AssembledTrack {
     centerLineCurve.getPointAt(0.75)
   ];
   
-  // 3. Tempatkan panel boost pads secara dinamis (misal di 15%, 45%, dan 70% lintasan)
+  // 3. Tempatkan panel boost pads secara dinamis (Hapus semua boost pad awal sirkuit)
   const boostPads: { position: THREE.Vector3; rotationY: number }[] = [];
-  const padTValues = [0.15, 0.45, 0.7];
-  
-  const padGeo = new THREE.PlaneGeometry(3.2, 2.2);
-  padGeo.rotateX(-Math.PI / 2);
-  const boostMaterial = new THREE.MeshLambertMaterial({
-    color: 0x00C2FF,
-    emissive: 0x00C2FF,
-    emissiveIntensity: 1.0,
-    side: THREE.DoubleSide
-  });
-  
-  padTValues.forEach(t => {
-    const pos = centerLineCurve.getPointAt(t);
-    // Letakkan sedikit di atas jalan agar terlihat (Y bounds jalan datar sekitar 0)
-    pos.y = 0.05;
-    
-    const tangent = centerLineCurve.getTangentAt(t);
-    const rotY = Math.atan2(tangent.x, tangent.z);
-    
-    boostPads.push({
-      position: pos.clone(),
-      rotationY: rotY
-    });
-    
-    // Buat visual boost pad (panah neon)
-    const mesh = new THREE.Mesh(padGeo, boostMaterial);
-    mesh.position.copy(pos);
-    mesh.rotation.y = rotY;
-    mesh.name = `boostpad_t_${Math.floor(t * 100)}`;
-    trackGroup.add(mesh);
-  });
   
   return {
     group: trackGroup,

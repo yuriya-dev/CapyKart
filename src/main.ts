@@ -20,6 +20,7 @@ import { initPhysics, createVehicleBody, buildTrackColliders, buildModelCollider
 import { Vehicle } from './core/Vehicle.ts';
 import { Controls } from './core/Controls.ts';
 import { FollowCamera } from './core/Camera.ts';
+import { MenuCinematic } from './core/MenuCinematic.ts';
 import { DriftMarks } from './core/DriftMarks.ts';
 
 // State Game
@@ -40,6 +41,7 @@ let controls: Controls;
 let trackData: ReturnType<typeof buildTrack>;
 let sceneryData: ReturnType<typeof setupScenery>;
 let driftMarks: DriftMarks;
+const menuCinematic = new MenuCinematic();
 
 // Logika Lap & Checkpoints
 let currentLap = 1;
@@ -49,6 +51,8 @@ let playerLeftStartZone = false; // True setelah player meninggalkan zona start 
 let startLinePos = new THREE.Vector3(); // Posisi fisik garis start/finish dari start_line.glb
 let bestLapTime = Infinity;
 let coinsCollected = 0;
+let boosterCharge = 0;
+const MAX_BOOSTER_CHARGE = 3;
 let score = 0;
 
 // Sistem Audio
@@ -60,6 +64,65 @@ let skidSound: THREE.Audio;
 
 // Timer & Clock
 const clock = new THREE.Clock();
+
+function updateCoinsUI() {
+  const coinsVal = document.getElementById('hud-coins-val');
+  if (coinsVal) {
+    coinsVal.textContent = coinsCollected.toString();
+  }
+}
+
+function updateBoosterUI() {
+  const statusEl = document.getElementById('hud-booster-status');
+  const seg1 = document.getElementById('booster-seg-1');
+  const seg2 = document.getElementById('booster-seg-2');
+  const seg3 = document.getElementById('booster-seg-3');
+
+  if (!statusEl) return;
+
+  // Reset class semua segmen booster
+  [seg1, seg2, seg3].forEach(seg => {
+    if (seg) {
+      seg.className = "flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95";
+    }
+  });
+
+  if (boosterCharge === 0) {
+    statusEl.textContent = "EMPTY";
+    statusEl.className = "text-on-surface-variant opacity-60";
+  } else if (boosterCharge === 1) {
+    statusEl.textContent = "READY (1/3)";
+    statusEl.className = "text-[#9945FF] font-bold";
+    if (seg1) seg1.className = "flex-1 h-8 bg-[#9945FF]/20 border-[#9945FF] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(153,69,255,0.4)]";
+  } else if (boosterCharge === 2) {
+    statusEl.textContent = "READY (2/3)";
+    statusEl.className = "text-[#14F195] font-bold";
+    if (seg1) seg1.className = "flex-1 h-8 bg-[#14F195]/20 border-[#14F195] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(20,241,149,0.4)]";
+    if (seg2) seg2.className = "flex-1 h-8 bg-[#14F195]/20 border-[#14F195] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(20,241,149,0.4)]";
+  } else if (boosterCharge === 3) {
+    statusEl.textContent = "FULL!";
+    statusEl.className = "text-secondary font-black animate-pulse";
+    [seg1, seg2, seg3].forEach(seg => {
+      if (seg) {
+        seg.className = "flex-1 h-8 bg-gradient-to-br from-[#9945FF]/20 to-[#14F195]/20 border-[#14F195] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_12px_rgba(20,241,149,0.6)]";
+      }
+    });
+  }
+}
+
+function triggerPlayerBoost() {
+  if (currentState !== 'RACING') return;
+  if (boosterCharge > 0) {
+    // 1.5 detik durasi per koin
+    const duration = boosterCharge * 1.5;
+    vehicle.triggerBoost(duration);
+    playBoostWhoosh();
+
+    // Reset isi booster
+    boosterCharge = 0;
+    updateBoosterUI();
+  }
+}
 
 function showLandingPage() {
   const landing = document.getElementById('landing-page') as HTMLDivElement;
@@ -412,6 +475,11 @@ async function loadAssets() {
           if (gltf === trackGltf && child.name.toLowerCase().includes('wall')) {
             wallMeshes.push(child);
           }
+          // Sembunyikan objek booster/pad bawaan model agar tidak kasat mata
+          if (gltf === trackGltf && (child.name.toLowerCase().includes('boost') || child.name.toLowerCase().includes('pad'))) {
+            child.visible = false;
+            child.position.y = -9999; // Pindahkan jauh agar tidak bisa memicu collider apa pun
+          }
         }
       });
     });
@@ -457,11 +525,7 @@ async function loadAssets() {
     trackData = buildTrack(shift);
     scene.add(trackData.group);
 
-    // Visualisasi waypoints
-    const pointsGeo = new THREE.BufferGeometry().setFromPoints(trackData.waypoints);
-    const pointsMat = new THREE.PointsMaterial({ color: 0xff0000, size: 0.8 });
-    const pointsObj = new THREE.Points(pointsGeo, pointsMat);
-    // scene.add(pointsObj);
+    menuCinematic.build(trackData.waypoints, startLinePos);
     sceneryData = setupScenery(scene, trackData.centerLineCurve);
 
     progressFill.style.width = '60%';
@@ -491,6 +555,8 @@ async function loadAssets() {
     driftMarks = new DriftMarks(scene);
     vehicle.onReset = () => {
       driftMarks.reset();
+      boosterCharge = 0;
+      updateBoosterUI();
     };
 
     // 4. Setup Fisika (Crashcat)
@@ -551,6 +617,7 @@ function startRace() {
 
   currentState = 'COUNTDOWN';
   countdownTimer = 10.0;
+  cameraSystem.startIntro(5.0); // Memulai intro putaran kamera 5 detik selama countdown
 
   const cdScreen = document.getElementById('countdown-screen') as HTMLDivElement;
   if (cdScreen) {
@@ -560,6 +627,7 @@ function startRace() {
   updateCountdownUI(countdownTimer);
 
   coinsCollected = 0;
+  boosterCharge = 0;
   score = 0;
   currentLap = 1;
   lapTimer = 0;
@@ -577,7 +645,8 @@ function startRace() {
 
   // Update Tampilan HUD Awal
   (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: 1 / ${TOTAL_LAPS}`;
-  (document.getElementById('hud-coins') as HTMLDivElement).textContent = `SOL COINS: 0`;
+  updateCoinsUI();
+  updateBoosterUI();
 
   // Mainkan suara mesin
   if (engineSound.buffer && !engineSound.isPlaying) {
@@ -605,7 +674,7 @@ function finishRace() {
   // Tampilkan data hasil
   (document.getElementById('res-total-time') as HTMLSpanElement).textContent = formatTime(lapTimer * 1000);
   (document.getElementById('res-best-time') as HTMLSpanElement).textContent = formatTime(bestLapTime * 1000);
-  (document.getElementById('res-coins') as HTMLSpanElement).textContent = `${coinsCollected} / 20`;
+  (document.getElementById('res-coins') as HTMLSpanElement).textContent = `${coinsCollected} / 5`;
   (document.getElementById('res-score') as HTMLSpanElement).textContent = totalScore.toString();
 
   // Play jingle kemenangan
@@ -652,10 +721,25 @@ function animate() {
   }
 
   // 1. Update elemen visual dekorasi
-  // Putar koin SOL
+  // Update koin SOL (efek melayang naik turun dan logo Solana yang selalu menghadap kamera / billboarding)
   sceneryData.coins.forEach(coin => {
     if (coin.visible) {
-      coin.rotation.y += dt * 1.5;
+      const coinIdx = coin.name.split('_')[1];
+      // Melayang naik-turun secara halus
+      coin.position.y = 0.8 + Math.sin(time * 2.5 + parseInt(coinIdx) * 0.5) * 0.12;
+      
+      // Putar bubble secara visual
+      const bubble = coin.getObjectByName(`bubble_${coinIdx}`);
+      if (bubble) {
+        bubble.rotation.y += dt * 0.8;
+        bubble.rotation.x += dt * 0.3;
+      }
+      
+      // Hadapkan logo Solana (billboard) selalu ke kamera
+      const logo = coin.getObjectByName(`logo_${coinIdx}`);
+      if (logo) {
+        logo.quaternion.copy(coin.quaternion).invert().multiply(cameraSystem.camera.quaternion);
+      }
     }
   });
 
@@ -789,24 +873,18 @@ function animate() {
           coinsCollected++;
           score += 100;
 
-          (document.getElementById('hud-coins') as HTMLDivElement).textContent = `SOL COINS: ${coinsCollected}`;
+          if (boosterCharge < MAX_BOOSTER_CHARGE) {
+            boosterCharge++;
+            updateBoosterUI();
+          }
+
+          updateCoinsUI();
           playCoinChime();
         }
       }
     });
 
-    // Deteksi Tabrak Boost Pad
-    trackData.boostPads.forEach(pad => {
-      const dist = vehicle.spherePos.distanceTo(pad.position);
-      if (dist < 2.5) {
-        // Cek apakah tidak sedang dalam boost aktif
-        if (!vehicle.driftIntensity || Math.random() < 0.15) {
-          // Cegah trigger berulang dalam satu frame
-          vehicle.triggerBoost(1.8);
-          playBoostWhoosh();
-        }
-      }
-    });
+    // Deteksi Tabrak Boost Pad (Dihapus sepenuhnya sesuai permintaan agar tidak ada booster pad yang ter-trigger)
 
     // Cek Lap menggunakan logika "keluar dan kembali ke zona start"
     // Player harus pergi > 20m dari garis start sebelum lap bisa dihitung
@@ -840,22 +918,19 @@ function animate() {
       if ((controls as any).keys['KeyR']) {
         vehicle.resetPosition();
       }
+      // Tombol Space booster keyboard
+      if ((controls as any).keys['Space']) {
+        triggerPlayerBoost();
+        (controls as any).keys['Space'] = false; // Mencegah trigger berulang kali
+      }
     }
 
     // Update Angka Spidometer
     const speedKmh = Math.floor(Math.abs(vehicle.linearSpeed) * 85);
     (document.getElementById('hud-speed') as HTMLDivElement).textContent = `${speedKmh} km/h`;
 
-  } else {
-    // Mode Menu Utama / Finish: Putar kamera keliling sirkuit secara sinematik
-    const rotSpeed = time * 0.05;
-    const radius = 110;
-    cameraSystem.camera.position.set(
-      radius * Math.cos(rotSpeed),
-      70,
-      radius * Math.sin(rotSpeed) + 60
-    );
-    cameraSystem.camera.lookAt(0, 5, 60);
+  } else if (currentState === 'MENU' || currentState === 'FINISHED') {
+    menuCinematic.update(dt, time, cameraSystem.camera);
   }
 
   // Render Scene dengan bloom neon
@@ -870,6 +945,11 @@ document.getElementById('btn-play')?.addEventListener('click', () => {
 document.getElementById('btn-replay')?.addEventListener('click', () => {
   (document.getElementById('results-screen') as HTMLDivElement).style.display = 'none';
   startRace();
+});
+
+// Listener booster container click (untuk desktop click & mobile tap)
+document.getElementById('hud-booster-container')?.addEventListener('click', () => {
+  triggerPlayerBoost();
 });
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {

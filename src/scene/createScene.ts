@@ -12,7 +12,7 @@ export interface Scenery {
   dirLight: THREE.DirectionalLight;
   towers: { group: THREE.Group; light: THREE.PointLight }[];
   billboards: THREE.Mesh[];
-  coins: THREE.Mesh[];
+  coins: THREE.Object3D[];
   obstacles: THREE.Mesh[];
 }
 
@@ -212,30 +212,63 @@ export function setupScenery(scene: THREE.Scene, centerLineCurve: THREE.CatmullR
   });
   */
   
-  // 7. Tempatkan Koin SOL (x20 tersebar merata di sirkuit)
-  const coins: THREE.Mesh[] = [];
-  const coinCount = 20;
-  
-  // Geometri Koin SOL (Torus tipis silinder emas)
-  const coinGeo = new THREE.TorusGeometry(0.6, 0.15, 8, 24);
-  const coinMat = new THREE.MeshLambertMaterial({
-    color: COLORS.gold,
-    emissive: COLORS.gold,
-    emissiveIntensity: 0.4
+  // 7. Tempatkan Koin SOL (x5 tersebar acak di sirkuit, koin berlogo Solana dibungkus bubble)
+  const coins: THREE.Object3D[] = [];
+  const coinCount = 5;
+
+  // Persiapkan loader tekstur untuk logo Solana SVG
+  const textureLoader = new THREE.TextureLoader();
+  const solanaTexture = textureLoader.load('/solana.svg');
+  const solanaMat = new THREE.MeshBasicMaterial({
+    map: solanaTexture,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+
+  // Geometri Logo Solana (Plane datar diperkecil agar pas di dalam bubble)
+  const logoGeo = new THREE.PlaneGeometry(0.7, 0.7);
+
+  // Geometri dan Material Bubble pembungkus (Sphere semi-transparan berkilau, depthWrite: false agar logo di dalam terrender)
+  const bubbleGeo = new THREE.SphereGeometry(0.7, 16, 16);
+  const bubbleMat = new THREE.MeshPhongMaterial({
+    color: 0x99e6ff,
+    transparent: true,
+    opacity: 0.45,
+    shininess: 120,
+    specular: 0xffffff,
+    side: THREE.DoubleSide,
+    depthWrite: false
   });
   
   for (let i = 0; i < coinCount; i++) {
-    // Dapatkan titik di sirkuit (hindari start/finish line agar tidak langsung terambil saat mulai)
-    const t = (i + 0.5) / coinCount; // offset 0.5 agar tersebar seimbang
+    // Membagi lintasan t [0.15, 0.85] menjadi 5 bagian non-overlapping untuk merandomisasi posisi koin tanpa clumping
+    const segmentWidth = 0.70 / coinCount;
+    const startT = 0.15 + i * segmentWidth;
+    const t = startT + Math.random() * segmentWidth;
+    
     const curvePoint = centerLineCurve.getPointAt(t);
     
-    const coin = new THREE.Mesh(coinGeo, coinMat);
-    coin.position.copy(curvePoint);
-    coin.position.y = 0.8; // Naikkan 0.8 unit dari jalan datar
-    coin.castShadow = true;
-    coin.name = `coin_${i}`;
-    scene.add(coin);
-    coins.push(coin);
+    // Group pembungkus logo + bubble
+    const coinGroup = new THREE.Group();
+    coinGroup.position.copy(curvePoint);
+    coinGroup.position.y = 0.8; // Naikkan 0.8 unit dari jalan datar
+    
+    // 1. Logo Solana (renderOrder: 1 agar digambar terlebih dahulu)
+    const logoMesh = new THREE.Mesh(logoGeo, solanaMat);
+    logoMesh.castShadow = true;
+    logoMesh.name = `logo_${i}`;
+    logoMesh.renderOrder = 1;
+    coinGroup.add(logoMesh);
+    
+    // 2. Bubble pembungkus (renderOrder: 2 agar digambar belakangan dengan blending transparan)
+    const bubbleMesh = new THREE.Mesh(bubbleGeo, bubbleMat);
+    bubbleMesh.name = `bubble_${i}`;
+    bubbleMesh.renderOrder = 2;
+    coinGroup.add(bubbleMesh);
+
+    coinGroup.name = `coin_${i}`;
+    scene.add(coinGroup);
+    coins.push(coinGroup);
   }
   
   // 8. Tempatkan Rintangan (MemeBarricade x2 di sepanjang sirkuit secara dinamis)

@@ -22,6 +22,11 @@ export class FollowCamera {
   private orbitYaw = 0;
   private orbitPitch = 0;
 
+  // Animasi orbit otomatis saat countdown mulai
+  private introActive = false;
+  private introTime = 0;
+  private introDuration = 5.0;
+
   constructor() {
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     
@@ -45,6 +50,11 @@ export class FollowCamera {
       isDragging = true;
       previousPointerX = e.clientX;
       previousPointerY = e.clientY;
+
+      // Hentikan intro jika pemain mulai menyeret kamera secara manual
+      if (this.introActive) {
+        this.introActive = false;
+      }
     });
 
     window.addEventListener('pointermove', (e) => {
@@ -72,6 +82,29 @@ export class FollowCamera {
   }
 
   /**
+   * Memulai animasi intro kamera memutar (orbit) otomatis.
+   * @param duration Durasi animasi dalam detik
+   */
+  public startIntro(duration = 5.0) {
+    this.initialized = false;
+    this.introActive = true;
+    this.introTime = 0;
+    this.introDuration = duration;
+    this.orbitYaw = Math.PI * 1.25; // Mulai dari serong depan (225 derajat)
+    this.orbitPitch = Math.PI / 10; // Ketinggian sedikit naik (18 derajat)
+  }
+
+  /**
+   * Mengatur ulang status kamera ke kondisi default.
+   */
+  public reset() {
+    this.initialized = false;
+    this.introActive = false;
+    this.orbitYaw = 0;
+    this.orbitPitch = 0;
+  }
+
+  /**
    * Memperbarui posisi kamera di belakang kendaraan
    * @param dt Delta time
    * @param target Posisi bodi kart (spherePos)
@@ -80,6 +113,24 @@ export class FollowCamera {
    * @param isAccelerating Apakah pemain sedang menekan gas
    */
   public update(dt: number, target: THREE.Vector3, quaternion: THREE.Quaternion, speed: number, isAccelerating: boolean) {
+    // Jalankan auto-orbit intro jika aktif
+    if (this.introActive) {
+      this.introTime += dt;
+      if (this.introTime >= this.introDuration) {
+        this.introActive = false;
+        this.orbitYaw = 0;
+        this.orbitPitch = 0;
+      } else {
+        const t = this.introTime / this.introDuration;
+        // Gunakan easing cubic ease-out
+        const ease = 1 - Math.pow(1 - t, 3);
+        const startYaw = Math.PI * 1.25;
+        const startPitch = Math.PI / 10;
+        this.orbitYaw = THREE.MathUtils.lerp(startYaw, 0, ease);
+        this.orbitPitch = THREE.MathUtils.lerp(startPitch, 0, ease);
+      }
+    }
+
     // 1. Dapatkan arah hadap depan kart (diproyeksikan ke bidang XZ)
     const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion);
     forward.y = 0;
@@ -87,6 +138,7 @@ export class FollowCamera {
 
     // 2. Kembalikan kamera ke posisi default jika kendaraan digas
     if (isAccelerating) {
+      this.introActive = false; // Hentikan intro jika gas ditekan
       this.orbitYaw = THREE.MathUtils.lerp(this.orbitYaw, 0, dt * 4.0);
       this.orbitPitch = THREE.MathUtils.lerp(this.orbitPitch, 0, dt * 4.0);
 

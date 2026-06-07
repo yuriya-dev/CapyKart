@@ -22,7 +22,7 @@ const _up = new THREE.Vector3(0, 1, 0);
 // Parameter kecepatan & handling
 const LINEAR_DAMP = 0.1;
 export const MAX_SPEED = 1; // Naikkan sedikit agar terasa lebih cepat
-export const BOOST_SPEED = 3.5;
+export const BOOST_SPEED = 1.8;
 
 function lerpAngle(a: number, b: number, t: number): number {
   let diff = b - a;
