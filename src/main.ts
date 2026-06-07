@@ -47,7 +47,7 @@ const menuCinematic = new MenuCinematic();
 let currentLap = 1;
 const TOTAL_LAPS = 3;
 let lapTimer = 0;
-let playerLeftStartZone = false; // True setelah player meninggalkan zona start (> 20m dari garis start)
+let totalRaceTime = 0; // Waktu total balapan
 let startLinePos = new THREE.Vector3(); // Posisi fisik garis start/finish dari start_line.glb
 let bestLapTime = Infinity;
 let coinsCollected = 0;
@@ -663,6 +663,54 @@ async function loadAssets() {
   }
 }
 
+function findClosestWaypointIdxGlobal(pos: THREE.Vector3, waypoints: THREE.Vector3[]): number {
+  let minD2 = Infinity;
+  let closestIdx = 0;
+  for (let i = 0; i < waypoints.length; i++) {
+    const d2 = pos.distanceToSquared(waypoints[i]);
+    if (d2 < minD2) {
+      minD2 = d2;
+      closestIdx = i;
+    }
+  }
+  return closestIdx;
+}
+
+function getRacerProgress(racer: Vehicle, waypoints: THREE.Vector3[]): number {
+  const wpLength = waypoints.length;
+  const idx = racer.closestWaypointIdx;
+  const nextIdx = (idx + 1) % wpLength;
+  
+  const currentWp = waypoints[idx];
+  const nextWp = waypoints[nextIdx];
+  const pos = racer.spherePos;
+  
+  const segment = new THREE.Vector3().subVectors(nextWp, currentWp);
+  const segmentLength = segment.length();
+  if (segmentLength < 0.001) {
+    return racer.currentLap * wpLength + idx;
+  }
+  
+  const toRacer = new THREE.Vector3().subVectors(pos, currentWp);
+  const segmentDir = segment.clone().normalize();
+  const projection = toRacer.dot(segmentDir) / segmentLength;
+  const clampedProj = THREE.MathUtils.clamp(projection, 0, 1);
+  
+  return racer.currentLap * wpLength + idx + clampedProj;
+}
+
+function compareRacers(a: Vehicle, b: Vehicle, waypoints: THREE.Vector3[]): number {
+  if (a.isFinished && b.isFinished) {
+    return a.finishTime - b.finishTime; // Lower finishTime (faster) comes first
+  }
+  if (a.isFinished) return -1;
+  if (b.isFinished) return 1;
+  
+  const progA = getRacerProgress(a, waypoints);
+  const progB = getRacerProgress(b, waypoints);
+  return progB - progA; // Higher progress comes first
+}
+
 /**
  * Memulai balapan
  */
@@ -687,7 +735,7 @@ function startRace() {
   score = 0;
   currentLap = 1;
   lapTimer = 0;
-  playerLeftStartZone = false;
+  totalRaceTime = 0;
   bestLapTime = Infinity;
 
   // Reset posisi kart & kembalikan koin terlihat
@@ -695,12 +743,32 @@ function startRace() {
   bots.forEach(bot => {
     bot.resetPosition();
   });
+
+  // Tentukan waypoint terdekat secara global saat balapan dimulai
+  const waypoints = trackData.waypoints;
+  const initPlayerIdx = findClosestWaypointIdxGlobal(vehicle.spherePos, waypoints);
+  vehicle.closestWaypointIdx = initPlayerIdx;
+  vehicle.prevWaypointIdx = initPlayerIdx;
+  vehicle.currentLap = 1;
+  vehicle.isFinished = false;
+  vehicle.finishTime = 0;
+
+  bots.forEach(bot => {
+    const initBotIdx = findClosestWaypointIdxGlobal(bot.spherePos, waypoints);
+    bot.closestWaypointIdx = initBotIdx;
+    bot.prevWaypointIdx = initBotIdx;
+    bot.currentLap = 1;
+    bot.isFinished = false;
+    bot.finishTime = 0;
+  });
+
   sceneryData.coins.forEach(c => {
     c.visible = true;
   });
 
   // Update Tampilan HUD Awal
   (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: 1 / ${TOTAL_LAPS}`;
+  (document.getElementById('hud-position') as HTMLDivElement).textContent = `POS: 1 / 4`;
   updateCoinsUI();
   updateBoosterUI();
 
@@ -725,10 +793,22 @@ function finishRace() {
   if (skidSound && skidSound.isPlaying) skidSound.stop();
 
   // Hitung total waktu lap
-  const totalScore = (coinsCollected * 100) + Math.max(0, Math.floor(10000 - lapTimer * 10));
+  const totalScore = (coinsCollected * 100) + Math.max(0, Math.floor(10000 - totalRaceTime * 10));
+
+  // Hitung peringkat akhir pemain
+  const racers = [vehicle, ...bots];
+  racers.sort((a, b) => compareRacers(a, b, trackData.waypoints));
+  const playerRank = racers.indexOf(vehicle) + 1;
+  let rankText = `${playerRank}th Place`;
+  if (playerRank === 1) rankText = '1st Place';
+  else if (playerRank === 2) rankText = '2nd Place';
+  else if (playerRank === 3) rankText = '3rd Place';
+
+  (document.getElementById('results-title') as HTMLHeadingElement).textContent = `You Finished ${playerRank === 1 ? '1st' : playerRank === 2 ? '2nd' : playerRank === 3 ? '3rd' : '4th'}!`;
 
   // Tampilkan data hasil
-  (document.getElementById('res-total-time') as HTMLSpanElement).textContent = formatTime(lapTimer * 1000);
+  (document.getElementById('res-rank') as HTMLSpanElement).textContent = rankText;
+  (document.getElementById('res-total-time') as HTMLSpanElement).textContent = formatTime(totalRaceTime * 1000);
   (document.getElementById('res-best-time') as HTMLSpanElement).textContent = formatTime(bestLapTime * 1000);
   (document.getElementById('res-coins') as HTMLSpanElement).textContent = `${coinsCollected} / 5`;
   (document.getElementById('res-score') as HTMLSpanElement).textContent = totalScore.toString();
@@ -867,6 +947,7 @@ function animate() {
     }
   } else if (currentState === 'RACING') {
     lapTimer += dt;
+    totalRaceTime += dt;
     (document.getElementById('hud-time') as HTMLDivElement).innerHTML = `
       TIME: ${formatTime(lapTimer * 1000)}<br>
       <span style="font-size: 0.8rem; opacity: 0.6;">BEST: ${formatTime(bestLapTime * 1000)}</span>
@@ -879,12 +960,13 @@ function animate() {
     // Perbarui logika pergerakan kart
     vehicle.update(dt, inputState);
 
-    // Update closestWaypointIdx player untuk lap detection
-    // (sama dengan logika bot, tapi tanpa steering output)
+    const waypoints = trackData.waypoints;
+    const totalWps = waypoints.length;
+
+    // Update closestWaypointIdx player dan lap wrap-around
     {
-      const waypoints = trackData.waypoints;
-      const botPos = vehicle.spherePos;
       const prevIdx = vehicle.closestWaypointIdx;
+      const botPos = vehicle.spherePos;
       let minD2 = Infinity;
       let closestIdx = prevIdx;
       for (let offset = -5; offset <= 15; offset++) {
@@ -893,13 +975,72 @@ function animate() {
         if (d2 < minD2) { minD2 = d2; closestIdx = idx; }
       }
       vehicle.closestWaypointIdx = closestIdx;
+
+      // Cek Lap wrap-around
+      if (prevIdx !== closestIdx) {
+        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25) {
+          if (!vehicle.isFinished) {
+            if (lapTimer < bestLapTime) {
+              bestLapTime = lapTimer;
+            }
+            vehicle.currentLap++;
+            currentLap = vehicle.currentLap;
+            lapTimer = 0;
+
+            // Munculkan lagi koin bubble Solana di lintasan saat lap baru
+            sceneryData.coins.forEach(c => {
+              c.visible = true;
+            });
+
+            if (currentLap > TOTAL_LAPS) {
+              vehicle.isFinished = true;
+              vehicle.finishTime = totalRaceTime;
+              finishRace();
+            } else {
+              (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
+            }
+          }
+        } else if (prevIdx < totalWps * 0.25 && closestIdx > totalWps * 0.75) {
+          if (!vehicle.isFinished && vehicle.currentLap > 1) {
+            vehicle.currentLap--;
+            currentLap = vehicle.currentLap;
+            (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
+          }
+        }
+        vehicle.prevWaypointIdx = closestIdx;
+      }
     }
 
-    // Perbarui logika pergerakan kart bot
+    // Perbarui logika pergerakan kart bot dan lap wrap-around
     bots.forEach((bot) => {
-      const botInput = calculateBotInput(bot, trackData.waypoints);
+      const prevIdx = bot.closestWaypointIdx;
+      const botInput = calculateBotInput(bot, waypoints);
       bot.update(dt, botInput);
+
+      const closestIdx = bot.closestWaypointIdx;
+      if (prevIdx !== closestIdx) {
+        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25) {
+          if (!bot.isFinished) {
+            bot.currentLap++;
+            if (bot.currentLap > TOTAL_LAPS) {
+              bot.isFinished = true;
+              bot.finishTime = totalRaceTime;
+            }
+          }
+        } else if (prevIdx < totalWps * 0.25 && closestIdx > totalWps * 0.75) {
+          if (!bot.isFinished && bot.currentLap > 1) {
+            bot.currentLap--;
+          }
+        }
+        bot.prevWaypointIdx = closestIdx;
+      }
     });
+
+    // Hitung posisi/rank real-time (1/4)
+    const racers = [vehicle, ...bots];
+    racers.sort((a, b) => compareRacers(a, b, waypoints));
+    const playerRank = racers.indexOf(vehicle) + 1;
+    (document.getElementById('hud-position') as HTMLDivElement).textContent = `POS: ${playerRank} / 4`;
 
     // Update drift tire tracks
     driftMarks.update(vehicle);
@@ -956,37 +1097,7 @@ function animate() {
 
     // Deteksi Tabrak Boost Pad (Dihapus sepenuhnya sesuai permintaan agar tidak ada booster pad yang ter-trigger)
 
-    // Cek Lap menggunakan logika "keluar dan kembali ke zona start"
-    // Player harus pergi > 20m dari garis start sebelum lap bisa dihitung
-    const distToStartLine = vehicle.spherePos.distanceTo(startLinePos);
-
-    if (!playerLeftStartZone && distToStartLine > 20.0) {
-      // Player sudah meninggalkan area start
-      playerLeftStartZone = true;
-    }
-
-    // Lap selesai: player kembali ke dalam radius 6m garis start, setelah meninggalkannya
-    if (playerLeftStartZone && distToStartLine < 6.0 && lapTimer > 10) {
-      playerLeftStartZone = false; // Reset: player harus keluar lagi sebelum lap berikutnya
-
-      if (lapTimer < bestLapTime) {
-        bestLapTime = lapTimer;
-      }
-
-      currentLap++;
-      lapTimer = 0;
-
-      // Munculkan lagi koin bubble Solana di lintasan saat lap baru
-      sceneryData.coins.forEach(c => {
-        c.visible = true;
-      });
-
-      if (currentLap > TOTAL_LAPS) {
-        finishRace();
-      } else {
-        (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
-      }
-    }
+    // Cek Lap menggunakan logika waypoint yang diproses di atas
 
     // Tombol R reset keyboard
     if ((controls as any).keys) {

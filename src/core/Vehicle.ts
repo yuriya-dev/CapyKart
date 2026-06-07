@@ -59,6 +59,10 @@ export class Vehicle {
 
   public driftIntensity = 0;
   public closestWaypointIdx = 0;
+  public prevWaypointIdx = 0;
+  public currentLap = 1;
+  public isFinished = false;
+  public finishTime = 0;
   private boostTimer = 0;
   private isBoosting = false;
 
@@ -367,6 +371,10 @@ export class Vehicle {
     this.isBoosting = false;
     this.boostTimer = 0;
     this.closestWaypointIdx = 0;
+    this.prevWaypointIdx = 0;
+    this.currentLap = 1;
+    this.isFinished = false;
+    this.finishTime = 0;
     if (this.onReset) {
       this.onReset();
     }
