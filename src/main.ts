@@ -70,9 +70,6 @@ function playCountdownBeep(isGo: boolean) {
     gain.gain.setValueAtTime(0.18, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.55);
   } else {
     // Red light beep: tut (sedang, durasi 0.12s)
     osc.type = 'sine';
@@ -80,19 +77,32 @@ function playCountdownBeep(isGo: boolean) {
     gain.gain.setValueAtTime(0.14, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.15);
   }
+
+  // Hubungkan ke audioListener.gain agar mematuhi volume master
+  if (audioListener && audioListener.gain) {
+    gain.connect(audioListener.gain);
+  } else {
+    gain.connect(ctx.destination);
+  }
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.55);
 }
 
-// Sistem Audio
+// Sistem Audio & Volume Master
 let audioListener: THREE.AudioListener;
 let engineSound: THREE.Audio;
 let lastCountdownBeepSec = -1;
 let coinSound: THREE.Audio;
 let boostSound: THREE.Audio;
 let skidSound: THREE.Audio;
+
+let masterVolume = 80; // default 80%
+const savedVolume = localStorage.getItem('capy_kart_volume');
+if (savedVolume !== null) {
+  masterVolume = parseInt(savedVolume);
+}
 
 // Timer & Clock
 const clock = new THREE.Clock();
@@ -351,6 +361,7 @@ function initRenderer() {
 function setupAudio() {
   audioListener = new THREE.AudioListener();
   cameraSystem.camera.add(audioListener);
+  audioListener.setMasterVolume(masterVolume / 100);
 
   engineSound = new THREE.Audio(audioListener);
   coinSound = new THREE.Audio(audioListener);
@@ -406,7 +417,14 @@ function playCoinChime() {
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    
+    // Hubungkan ke audioListener.gain agar mematuhi volume master
+    if (audioListener && audioListener.gain) {
+      gain.connect(audioListener.gain);
+    } else {
+      gain.connect(ctx.destination);
+    }
+    
     osc.start();
     osc.stop(ctx.currentTime + 0.4);
   }
@@ -1002,6 +1020,70 @@ document.getElementById('hud-booster-container')?.addEventListener('click', () =
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {
   startRace();
+});
+
+// Modal Settings Handlers
+const settingsModal = document.getElementById('settings-modal') as HTMLDivElement;
+const btnSettings = document.getElementById('btn-settings');
+const btnSettingsHud = document.getElementById('btn-settings-hud');
+const btnSettingsClose = document.getElementById('btn-settings-close');
+const btnSettingsSave = document.getElementById('btn-settings-save');
+const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+const volumePctText = document.getElementById('volume-pct-text') as HTMLSpanElement;
+const volumeIcon = document.getElementById('volume-icon') as HTMLSpanElement;
+
+function openSettings() {
+  if (!settingsModal || !volumeSlider || !volumePctText) return;
+  volumeSlider.value = masterVolume.toString();
+  volumePctText.textContent = `${masterVolume}%`;
+  updateVolumeIcon(masterVolume);
+  
+  settingsModal.style.display = 'flex';
+  setTimeout(() => {
+    settingsModal.style.opacity = '1';
+  }, 10);
+}
+
+function closeSettings() {
+  if (!settingsModal) return;
+  settingsModal.style.opacity = '0';
+  setTimeout(() => {
+    settingsModal.style.display = 'none';
+  }, 300);
+}
+
+function updateVolumeIcon(vol: number) {
+  if (!volumeIcon) return;
+  if (vol === 0) {
+    volumeIcon.textContent = 'volume_off';
+  } else if (vol < 40) {
+    volumeIcon.textContent = 'volume_down';
+  } else {
+    volumeIcon.textContent = 'volume_up';
+  }
+}
+
+btnSettings?.addEventListener('click', openSettings);
+btnSettingsHud?.addEventListener('click', openSettings);
+btnSettingsClose?.addEventListener('click', closeSettings);
+btnSettingsSave?.addEventListener('click', () => {
+  if (volumeSlider) {
+    masterVolume = parseInt(volumeSlider.value);
+    localStorage.setItem('capy_kart_volume', masterVolume.toString());
+    if (audioListener) {
+      audioListener.setMasterVolume(masterVolume / 100);
+    }
+  }
+  closeSettings();
+});
+
+volumeSlider?.addEventListener('input', () => {
+  const val = parseInt(volumeSlider.value);
+  volumePctText.textContent = `${val}%`;
+  updateVolumeIcon(val);
+  if (audioListener) {
+    audioListener.setMasterVolume(val / 100);
+  }
 });
 
 // Jalankan Persiapan Game

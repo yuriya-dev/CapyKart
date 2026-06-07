@@ -234,9 +234,9 @@
           <!-- Desktop Navigation -->
 
         <div class="flex items-center gap-4">
-          <button class="bg-secondary text-white px-6 py-2 rounded-full font-title-md btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center gap-2"><span class="">Play</span></button>
-          <button class="hover:rotate-45 transition-transform active:translate-y-1">
-          <span class="material-symbols-outlined text-primary text-4xl">settings</span>
+          <button class="clickable bg-secondary text-white px-6 py-2 rounded-full font-title-md btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center gap-2" onclick="document.getElementById('btn-play')?.click()"><span class="">Play</span></button>
+          <button id="btn-settings" class="clickable hover:rotate-45 transition-transform active:translate-y-1">
+            <span class="material-symbols-outlined text-primary text-4xl">settings</span>
           </button>
         </div>
       </div>
@@ -384,8 +384,37 @@
       <div class="font-title-md mt-4 text-white/90" id="loading-status">Mengunduh aset 3D sirkuit...</div>
     </div>
 
+    <!-- Modal Pengaturan Volume -->
+    <div id="settings-modal" class="fixed inset-0 flex justify-center items-center bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 pointer-events-auto">
+      <div class="bg-surface card-outline rounded-[32px] p-8 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] relative text-center">
+        <button id="btn-settings-close" class="clickable absolute top-4 right-4 text-on-surface-variant hover:scale-110 active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-3xl">close</span>
+        </button>
+        <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase tracking-wide">PENGATURAN</h2>
+        <div class="space-y-6 text-left">
+          <!-- Slider Volume -->
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center text-sm font-bold text-on-surface">
+              <span class="flex items-center gap-1.5">
+                <span id="volume-icon" class="material-symbols-outlined text-2xl text-secondary">volume_up</span>
+                VOLUME SUARA
+              </span>
+              <span id="volume-pct-text">80%</span>
+            </div>
+            <input type="range" id="volume-slider" min="0" max="100" value="80" class="clickable w-full h-3 bg-surface-container rounded-full appearance-none cursor-pointer border-2 border-on-surface accent-secondary [&::-webkit-slider-runnable-track]:bg-surface-container [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-secondary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-on-surface [&::-webkit-slider-thumb]:-mt-2.5">
+          </div>
+        </div>
+        <button id="btn-settings-save" type="button" class="clickable w-full mt-8 btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">SIMPAN</button>
+      </div>
+    </div>
+
     <div id="hud" class="absolute inset-0">
-      <div class="absolute top-6 left-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-lap">LAP: 1 / 3</div>
+      <div class="absolute top-6 left-6 flex items-center gap-3">
+        <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-lap">LAP: 1 / 3</div>
+        <button id="btn-settings-hud" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:rotate-45 transition-transform" style="pointer-events: auto;">
+          <span class="material-symbols-outlined text-primary text-2xl">settings</span>
+        </button>
+      </div>
       <div class="absolute top-6 right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time">
         TIME: 00:00.00<br>
         <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
