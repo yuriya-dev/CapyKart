@@ -44,8 +44,9 @@ let driftMarks: DriftMarks;
 // Logika Lap & Checkpoints
 let currentLap = 1;
 const TOTAL_LAPS = 3;
-let nextCheckpointIdx = 0;
 let lapTimer = 0;
+let playerLeftStartZone = false; // True setelah player meninggalkan zona start (> 20m dari garis start)
+let startLinePos = new THREE.Vector3(); // Posisi fisik garis start/finish dari start_line.glb
 let bestLapTime = Infinity;
 let coinsCollected = 0;
 let score = 0;
@@ -715,6 +716,14 @@ async function loadAssets() {
       start_4: getStartPos('start_4', new THREE.Vector3(2.0, 1.2, -45.0))
     };
 
+    // Simpan posisi garis start/finish sebagai rata-rata ke-4 slot start
+    startLinePos.set(
+      (spawnPositions.start_1.x + spawnPositions.start_2.x + spawnPositions.start_3.x + spawnPositions.start_4.x) / 4,
+      (spawnPositions.start_1.y + spawnPositions.start_2.y + spawnPositions.start_3.y + spawnPositions.start_4.y) / 4,
+      (spawnPositions.start_1.z + spawnPositions.start_2.z + spawnPositions.start_3.z + spawnPositions.start_4.z) / 4
+    );
+    console.log('START LINE POS:', startLinePos);
+
     // Hitung pergeseran sirkuit (shift) secara dinamis agar pas dengan jalan baru
     const new_x_center = (spawnPositions.start_1.x + spawnPositions.start_3.x) / 2;
     const new_z_center = (spawnPositions.start_1.z + spawnPositions.start_2.z) / 2;
@@ -733,7 +742,7 @@ async function loadAssets() {
     const pointsGeo = new THREE.BufferGeometry().setFromPoints(trackData.waypoints);
     const pointsMat = new THREE.PointsMaterial({ color: 0xff0000, size: 0.8 });
     const pointsObj = new THREE.Points(pointsGeo, pointsMat);
-    scene.add(pointsObj);
+    // scene.add(pointsObj);
     sceneryData = setupScenery(scene, trackData.centerLineCurve);
 
     progressFill.style.width = '60%';
@@ -769,6 +778,9 @@ async function loadAssets() {
     physicsSystem = initPhysics();
     buildTrackColliders(physicsSystem, trackData.centerLineCurve);
     wallMeshes.forEach(wallMesh => {
+      // Scale wall 2× di sumbu Y agar kart tidak bisa lompat pagar
+      wallMesh.scale.y *= 2.0;
+      wallMesh.updateMatrixWorld(true);
       buildModelColliders(physicsSystem, wallMesh);
     });
 
@@ -831,8 +843,8 @@ function startRace() {
   coinsCollected = 0;
   score = 0;
   currentLap = 1;
-  nextCheckpointIdx = 0;
   lapTimer = 0;
+  playerLeftStartZone = false;
   bestLapTime = Infinity;
 
   // Reset posisi kart & kembalikan koin terlihat
@@ -994,6 +1006,22 @@ function animate() {
     // Perbarui logika pergerakan kart
     vehicle.update(dt, inputState);
 
+    // Update closestWaypointIdx player untuk lap detection
+    // (sama dengan logika bot, tapi tanpa steering output)
+    {
+      const waypoints = trackData.waypoints;
+      const botPos = vehicle.spherePos;
+      const prevIdx = vehicle.closestWaypointIdx;
+      let minD2 = Infinity;
+      let closestIdx = prevIdx;
+      for (let offset = -5; offset <= 15; offset++) {
+        const idx = (prevIdx + offset + waypoints.length) % waypoints.length;
+        const d2 = botPos.distanceToSquared(waypoints[idx]);
+        if (d2 < minD2) { minD2 = d2; closestIdx = idx; }
+      }
+      vehicle.closestWaypointIdx = closestIdx;
+    }
+
     // Perbarui logika pergerakan kart bot
     bots.forEach((bot) => {
       const botInput = calculateBotInput(bot, trackData.waypoints);
@@ -1061,32 +1089,30 @@ function animate() {
       }
     });
 
-    // Cek Checkpoints & Lap
-    const currentTargetCp = trackData.checkpoints[nextCheckpointIdx];
-    if (currentTargetCp) {
-      const distToCp = vehicle.spherePos.distanceTo(currentTargetCp);
-      if (distToCp < 9.0) {
-        // Lanjut ke checkpoint berikutnya
-        nextCheckpointIdx = (nextCheckpointIdx + 1) % trackData.checkpoints.length;
+    // Cek Lap menggunakan logika "keluar dan kembali ke zona start"
+    // Player harus pergi > 20m dari garis start sebelum lap bisa dihitung
+    const distToStartLine = vehicle.spherePos.distanceTo(startLinePos);
 
-        // Melewati Garis Start/Finish checkpoint (index 0)
-        if (nextCheckpointIdx === 0) {
-          // Putaran lap selesai
-          if (lapTimer > 5) { // minimal 5 detik per lap untuk cegah bug trigger cepat
-            if (lapTimer < bestLapTime) {
-              bestLapTime = lapTimer;
-            }
+    if (!playerLeftStartZone && distToStartLine > 20.0) {
+      // Player sudah meninggalkan area start
+      playerLeftStartZone = true;
+    }
 
-            currentLap++;
-            lapTimer = 0;
+    // Lap selesai: player kembali ke dalam radius 6m garis start, setelah meninggalkannya
+    if (playerLeftStartZone && distToStartLine < 6.0 && lapTimer > 10) {
+      playerLeftStartZone = false; // Reset: player harus keluar lagi sebelum lap berikutnya
 
-            if (currentLap > TOTAL_LAPS) {
-              finishRace();
-            } else {
-              (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
-            }
-          }
-        }
+      if (lapTimer < bestLapTime) {
+        bestLapTime = lapTimer;
+      }
+
+      currentLap++;
+      lapTimer = 0;
+
+      if (currentLap > TOTAL_LAPS) {
+        finishRace();
+      } else {
+        (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
       }
     }
 

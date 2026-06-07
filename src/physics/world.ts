@@ -69,7 +69,7 @@ export function createVehicleBody(physics: PhysicsSystem, spawnPos: THREE.Vector
     restitution: 0.1,
     linearDamping: 0.05,
     angularDamping: 3.5, // Damping angular tinggi agar tidak berputar liar
-    gravityFactor: 1.5,
+    gravityFactor: 3.5,
     motionQuality: MotionQuality.LINEAR_CAST
   });
 }
