@@ -593,11 +593,16 @@ async function loadAssets() {
     const vehicleGroup = vehicle.init(capyGltf);
     scene.add(vehicleGroup);
 
-    // Muat 3 bot lawan dengan model yang sama
+    // Muat 3 bot lawan dengan model yang sama dan berikan tekstur kustom yang unik (suit 2-4, kart 2-4)
     bots = [];
     for (let i = 0; i < 3; i++) {
       const bot = new Vehicle();
       const botGroup = bot.init(capyGltf);
+      
+      const suitIdx = i + 2;
+      const kartIdx = i + 2;
+      bot.setCustomTextures(`/capy_suit_${suitIdx}.png`, `/kart${kartIdx}.png`);
+      
       scene.add(botGroup);
       bots.push(bot);
     }

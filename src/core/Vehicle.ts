@@ -163,6 +163,57 @@ export class Vehicle {
   }
 
   /**
+   * Menetapkan tekstur kustom untuk kostum capy dan bodi kart pembalap ini
+   */
+  public setCustomTextures(suitUrl: string, kartUrl: string) {
+    const loader = new THREE.TextureLoader();
+    
+    const suitTexture = loader.load(suitUrl);
+    suitTexture.colorSpace = THREE.SRGBColorSpace;
+    suitTexture.flipY = false;
+    
+    const kartTexture = loader.load(kartUrl);
+    kartTexture.colorSpace = THREE.SRGBColorSpace;
+    kartTexture.flipY = false;
+
+    const tireTexture = loader.load('/tire.png');
+    tireTexture.colorSpace = THREE.SRGBColorSpace;
+    tireTexture.flipY = false;
+    
+    this.container.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        // Check if this mesh belongs to a wheel or tire
+        let isTire = false;
+        let p = child;
+        while (p && p !== this.container) {
+          const pName = p.name.toLowerCase();
+          if (pName.includes('wheel') || pName.includes('tire')) {
+            isTire = true;
+            break;
+          }
+          p = p.parent;
+        }
+
+        if (child.name === 'node_41') {
+          child.material = child.material.clone();
+          child.material.map = suitTexture;
+          child.material.needsUpdate = true;
+        } else if (isTire) {
+          if (child.material.map) {
+            child.material = child.material.clone();
+            child.material.map = tireTexture;
+            child.material.needsUpdate = true;
+          }
+        } else if (child.material.map) {
+          child.material = child.material.clone();
+          child.material.map = kartTexture;
+          child.material.needsUpdate = true;
+        }
+      }
+    });
+  }
+
+  /**
    * Memicu boost pad (kecepatan bertambah sangat cepat selama beberapa detik)
    */
   public triggerBoost(durationSeconds = 2.0) {
