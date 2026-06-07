@@ -61,298 +61,17 @@ let skidSound: THREE.Audio;
 // Timer & Clock
 const clock = new THREE.Clock();
 
-// Inisialisasi UI Kontainer
-const uiContainer = document.createElement('div');
-uiContainer.id = 'ui-container';
-document.body.appendChild(uiContainer);
+function showLandingPage() {
+  const landing = document.getElementById('landing-page') as HTMLDivElement;
+  if (landing) landing.style.display = 'block';
+  document.body.style.overflow = 'auto';
+}
 
-// Style UI Glassmorphism
-const uiStyle = document.createElement('style');
-uiStyle.textContent = `
-  #ui-container {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 50;
-    font-family: 'Outfit', 'Inter', sans-serif;
-  }
-  .clickable {
-    pointer-events: auto;
-    cursor: pointer;
-  }
-  /* Loading Screen */
-  #loading-screen {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at center, #0f0d25 0%, #050510 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #ffffff;
-    z-index: 1000;
-    transition: opacity 0.5s ease;
-  }
-  .logo-text {
-    font-size: 3rem;
-    font-weight: 900;
-    background: linear-gradient(45deg, #9945FF, #00C2FF, #14F195);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 20px rgba(0, 194, 255, 0.4);
-  }
-  .progress-bar {
-    width: 250px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #9945FF, #14F195);
-    transition: width 0.1s ease;
-  }
-  .loading-status {
-    margin-top: 12px;
-    font-size: 0.9rem;
-    color: #a0a0c0;
-  }
-  /* Glassmorphic Panel */
-  .glass-panel {
-    background: rgba(13, 13, 26, 0.65);
-    border: 1px solid rgba(0, 194, 255, 0.25);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
-    color: #ffffff;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
-  /* Main Menu Overlay */
-  #main-menu {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 380px;
-    padding: 30px;
-    text-align: center;
-    display: none;
-  }
-  .menu-btn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(90deg, #9945FF, #14F195);
-    border: none;
-    border-radius: 10px;
-    color: #ffffff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    box-shadow: 0 0 15px rgba(20, 241, 149, 0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .menu-btn:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 25px rgba(20, 241, 149, 0.7);
-  }
-  .controls-info {
-    margin-top: 20px;
-    font-size: 0.85rem;
-    color: #a0a0c0;
-    line-height: 1.5;
-  }
-  /* HUD (In-game) */
-  #hud {
-    position: absolute;
-    inset: 0;
-    display: none;
-  }
-  .hud-item {
-    position: absolute;
-    padding: 10px 18px;
-    font-weight: 700;
-    font-size: 1.1rem;
-  }
-  #hud-speed {
-    bottom: 24px;
-    right: 24px;
-    font-size: 1.8rem;
-    border: 1px solid rgba(20, 241, 149, 0.3);
-  }
-  #hud-lap {
-    top: 24px;
-    left: 24px;
-  }
-  #hud-time {
-    top: 24px;
-    right: 24px;
-    text-align: right;
-  }
-  #hud-coins {
-    bottom: 24px;
-    left: 24px;
-    color: #F0C040;
-  }
-  .reset-btn {
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 8px 16px;
-    background: rgba(255, 60, 60, 0.2);
-    border: 1px solid rgba(255, 60, 60, 0.4);
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #ff9999;
-  }
-  .reset-btn:hover {
-    background: rgba(255, 60, 60, 0.4);
-  }
-  /* Results Overlay */
-  #results-screen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 400px;
-    padding: 40px 30px;
-    text-align: center;
-    display: none;
-  }
-  .results-title {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: #14F195;
-    margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(20, 241, 149, 0.5);
-  }
-  .stats-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 14px 0;
-    font-size: 1.1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 6px;
-  }
-  /* Countdown Screen */
-  #countdown-screen {
-    position: absolute;
-    inset: 0;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-    z-index: 200;
-    background: rgba(13, 13, 26, 0.45);
-    transition: opacity 0.5s ease;
-  }
-  #countdown-lights {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 14px 28px;
-    border-radius: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  }
-  .light-circle {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #1a1a24;
-    border: 2px solid #2d2d3a;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
-  }
-  .light-red {
-    background: radial-gradient(circle, #ff3b30 0%, #a7140d 100%) !important;
-    border-color: #ff6b62 !important;
-    box-shadow: 0 0 25px #ff3b30, inset 0 0 8px rgba(255,255,255,0.6) !important;
-  }
-  .light-green {
-    background: radial-gradient(circle, #4cd964 0%, #147a24 100%) !important;
-    border-color: #72f287 !important;
-    box-shadow: 0 0 30px #4cd964, inset 0 0 8px rgba(255,255,255,0.6) !important;
-  }
-  #countdown-text {
-    font-size: 8rem;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 0 40px rgba(255, 255, 255, 0.7);
-    animation: countdown-pulse 1s infinite;
-  }
-  @keyframes countdown-pulse {
-    0% { transform: scale(1.0); }
-    50% { transform: scale(1.15); }
-    100% { transform: scale(1.0); }
-  }
-`;
-document.head.appendChild(uiStyle);
-
-// Render Elemen-Elemen HTML
-uiContainer.innerHTML = `
-  <!-- Loading Screen -->
-  <div id="loading-screen">
-    <div class="logo-text">CAPY KART ARENA</div>
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="loading-status" id="loading-status">Mengunduh aset 3D sirkuit...</div>
-  </div>
-
-  <!-- Main Menu -->
-  <div id="main-menu" class="glass-panel">
-    <div class="logo-text" style="font-size: 2.4rem;">CAPY KART</div>
-    <p style="color: #a0a0c0; margin-bottom: 30px;">Race Through The Solana Metaverse</p>
-    <button class="menu-btn clickable" id="btn-play">MULAI BALAPAN</button>
-    <div class="controls-info">
-      <strong>KONTROL KART:</strong><br>
-      WASD / Tombol Panah : Setir & Gas<br>
-      Tombol R : Reset Posisi<br>
-      Mobile: Sentuh layar untuk Joystick Virtual
-    </div>
-  </div>
-
-  <!-- HUD In-game -->
-  <div id="hud">
-    <div class="hud-item glass-panel" id="hud-lap">LAP: 1 / 3</div>
-    <div class="hud-item glass-panel" id="hud-time">
-      TIME: 00:00.00<br>
-      <span style="font-size: 0.8rem; opacity: 0.6;" id="hud-best-time">BEST: --:--.--</span>
-    </div>
-    <div class="hud-item glass-panel" id="hud-coins">SOL COINS: 0</div>
-    <button class="reset-btn clickable" id="btn-reset">RESET POSISI (R)</button>
-    <div class="hud-item glass-panel" id="hud-speed">0 km/h</div>
-  </div>
-
-  <!-- Results Screen -->
-  <div id="results-screen" class="glass-panel">
-    <div class="results-title">FINISH!</div>
-    <div style="margin-bottom: 30px;">
-      <div class="stats-row"><span>Total Waktu:</span><span id="res-total-time">--:--.--</span></div>
-      <div class="stats-row"><span>Best Lap:</span><span id="res-best-time">--:--.--</span></div>
-      <div class="stats-row"><span>Koin SOL Terkumpul:</span><span id="res-coins">0 / 20</span></div>
-      <div class="stats-row"><span>Total Skor:</span><span id="res-score">0</span></div>
-    </div>
-    <button class="menu-btn clickable" id="btn-replay">MAIN LAGI</button>
-  </div>
-
-  <!-- Countdown Overlay -->
-  <div id="countdown-screen">
-    <div id="countdown-lights">
-      <div class="light-circle" id="light-1"></div>
-      <div class="light-circle" id="light-2"></div>
-      <div class="light-circle" id="light-3"></div>
-      <div class="light-circle" id="light-4"></div>
-      <div class="light-circle" id="light-5"></div>
-    </div>
-    <div id="countdown-text">10</div>
-  </div>
-`;
+function hideLandingPage() {
+  const landing = document.getElementById('landing-page') as HTMLDivElement;
+  if (landing) landing.style.display = 'none';
+  document.body.style.overflow = 'hidden';
+}
 
 // Fungsi Format Waktu
 function formatTime(ms: number): string {
@@ -380,8 +99,8 @@ function updateCountdownUI(timeLeft: number) {
 
   if (timeLeft <= 0) {
     cdText.textContent = 'GO!';
-    cdText.style.color = '#14F195';
-    cdText.style.textShadow = '0 0 30px rgba(20, 241, 149, 0.8)';
+    cdText.style.color = '#ffe16e';
+    cdText.style.textShadow = '0 0 30px rgba(255, 225, 110, 0.8)';
     lights.forEach(l => {
       if (l) {
         l.className = 'light-circle light-green';
@@ -812,9 +531,9 @@ async function loadAssets() {
       loadScreen.style.opacity = '0';
       setTimeout(() => loadScreen.style.display = 'none', 500);
 
-      // Tampilkan Menu Utama
+      // Tampilkan Landing Page
       currentState = 'MENU';
-      (document.getElementById('main-menu') as HTMLDivElement).style.display = 'block';
+      showLandingPage();
     }, 400);
 
   } catch (error) {
@@ -827,7 +546,7 @@ async function loadAssets() {
  * Memulai balapan
  */
 function startRace() {
-  (document.getElementById('main-menu') as HTMLDivElement).style.display = 'none';
+  hideLandingPage();
   (document.getElementById('hud') as HTMLDivElement).style.display = 'block';
 
   currentState = 'COUNTDOWN';

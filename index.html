@@ -1,31 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="author" content="Wahyu - CapyJam Entry">
-  <title>Capybara Racing 3D - Solana Metaverse City</title>
+  <title>Capy Kart Arena | $CAPYRACE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            tertiary: "#705d00",
+            "on-surface": "#1a1c1c",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed": "#ffe16e",
+            "on-primary-fixed": "#410002",
+            "on-error": "#ffffff",
+            "on-secondary-fixed": "#001c38",
+            "secondary-container": "#47a1ff",
+            "surface-container": "#eeeeee",
+            surface: "#f9f9f9",
+            "on-primary-fixed-variant": "#93000d",
+            "secondary-fixed": "#d3e4ff",
+            "primary-container": "#db322f",
+            "on-tertiary-container": "#4c3f00",
+            "surface-container-highest": "#e2e2e2",
+            "error-container": "#ffdad6",
+            "surface-bright": "#f9f9f9",
+            "outline-variant": "#e4beb9",
+            secondary: "#0060a8",
+            "on-background": "#1a1c1c",
+            "on-secondary-container": "#003663",
+            "tertiary-container": "#c9a900",
+            "inverse-on-surface": "#f1f1f1",
+            "on-primary-container": "#fffbff",
+            "inverse-primary": "#ffb4ac",
+            background: "#f9f9f9",
+            error: "#ba1a1a",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#f3f3f3",
+            "on-tertiary-fixed": "#221b00",
+            "surface-variant": "#e2e2e2",
+            "on-tertiary-fixed-variant": "#544600",
+            "tertiary-fixed-dim": "#e8c41d",
+            "on-secondary": "#ffffff",
+            "on-surface-variant": "#5b403d",
+            "surface-tint": "#bb171c",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#ffb4ac",
+            "surface-dim": "#dadada",
+            "secondary-fixed-dim": "#a2c9ff",
+            outline: "#906f6c",
+            "on-secondary-fixed-variant": "#004881",
+            "surface-container-high": "#e8e8e8",
+            "inverse-surface": "#2f3131",
+            "primary-fixed": "#ffdad6",
+            "on-error-container": "#93000a",
+            primary: "#b7131a"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          spacing: {
+            "item-gap": "12px",
+            "safe-area": "32px",
+            "container-padding": "24px",
+            gutter: "16px",
+            "base-unit": "8px"
+          },
+          fontFamily: {
+            "title-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "display-hero": ["Rubik"],
+            "headline-lg-mobile": ["Rubik"],
+            "headline-lg": ["Rubik"],
+            "body-base": ["Plus Jakarta Sans"]
+          },
+          fontSize: {
+            "title-md": ["20px", { lineHeight: "1.4", fontWeight: "700" }],
+            "label-sm": ["13px", { lineHeight: "1.2", fontWeight: "700" }],
+            "display-hero": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "900" }],
+            "headline-lg-mobile": ["24px", { lineHeight: "1.2", fontWeight: "800" }],
+            "headline-lg": ["32px", { lineHeight: "1.2", fontWeight: "800" }],
+            "body-base": ["16px", { lineHeight: "1.5", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #0d0d1a;
-      font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #ffffff;
       user-select: none;
       -webkit-user-select: none;
     }
     canvas {
       display: block;
+      position: fixed;
+      inset: 0;
       width: 100vw;
       height: 100vh;
       touch-action: none;
+      z-index: 0;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .glossy-overlay {
+      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%);
+    }
+    .btn-3d-press:active {
+      transform: translateY(4px);
+      box-shadow: 0 0px 0 0 rgba(0,0,0,0.2) !important;
+    }
+    .card-outline {
+      border: 4px solid #1a1c1c;
+    }
+    .stadium-bg {
+      background: linear-gradient(180deg, #1e88e5 0%, #bb171c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .stadium-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15) 0%, transparent 20%),
+        radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15) 0%, transparent 25%);
+      opacity: 0.6;
+    }
+    .nav-item-active {
+      background-color: #47a1ff;
+      color: #ffffff;
+      border: 2px solid #1a1c1c;
+      box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+    }
+    #landing-page {
+      position: relative;
+      z-index: 10;
+      display: none;
+    }
+    #ui-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .clickable {
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #1e88e5 0%, #bb171c 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    .progress-bar {
+      width: 280px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid #1a1c1c;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffe16e;
+      transition: width 0.1s ease;
+    }
+    #hud { display: none; }
+    #countdown-screen { display: none; }
+    #results-screen { display: none; }
+    .light-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1a1a24;
+      border: 2px solid #2d2d3a;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .light-red {
+      background: radial-gradient(circle, #ff3b30 0%, #a7140d 100%) !important;
+      border-color: #ff6b62 !important;
+      box-shadow: 0 0 25px #ff3b30, inset 0 0 8px rgba(255,255,255,0.6) !important;
+    }
+    .light-green {
+      background: radial-gradient(circle, #4cd964 0%, #147a24 100%) !important;
+      border-color: #72f287 !important;
+      box-shadow: 0 0 30px #4cd964, inset 0 0 8px rgba(255,255,255,0.6) !important;
+    }
+    @keyframes countdown-pulse {
+      0% { transform: scale(1.0); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1.0); }
+    }
+    #countdown-text {
+      animation: countdown-pulse 1s infinite;
     }
   </style>
 </head>
-<body>
-  <div id="app"></div>
+<body class="bg-background font-body-base text-on-surface selection:bg-secondary-container">
+
+  <div id="landing-page">
+    <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky">
+      <div class="max-w-[1440px] mx-auto px-container-padding py-4 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full border-4 border-on-surface overflow-hidden bg-secondary-container">
+            <img alt="Player Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyXOrp-KU-AiewQwQD3QLZ5y-rQIzISRXOA60pPP_xCzs-vabB7_wk7r31NHh5zBgxPODGHBJcsf-Z98V0J8wireBFB29JzpK4FkIxwjmSbCS0NjKFMqS6I_8G3vGbkCKRRbvdcJB3yWoHRJ4CeAn-Tv3qYt4Ir-l2ceffz8JJhDQ2Mz_r8xgthjI3lsVmRaIs2pw83asiLcd_U-CZihxXEItdrCLLhJ08HpUdi-UZYpDm92rBpns5tdZBRoCP_kZJX6fyJudDG1G0">
+          </div>
+          <div class="hidden lg:flex flex-col">
+            <span class="font-title-md text-on-surface leading-none">CapyRacer_99</span>
+            <span class="font-label-sm text-primary font-bold">Level 24</span>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-4">
+          <a class="flex items-center gap-2 px-6 py-2 rounded-full font-title-md hover:bg-surface-container transition-all group" href="#">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">shopping_cart</span>
+            <span>Shop</span>
+          </a>
+          <a class="flex items-center gap-2 px-6 py-2 rounded-full font-title-md nav-item-active transition-all" href="#">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sports_esports</span>
+            <span>Races</span>
+          </a>
+          <a class="flex items-center gap-2 px-6 py-2 rounded-full font-title-md hover:bg-surface-container transition-all group" href="#">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">leaderboard</span>
+            <span>Rank</span>
+          </a>
+          <a class="flex items-center gap-2 px-6 py-2 rounded-full font-title-md hover:bg-surface-container transition-all group" href="#">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">volume_up</span>
+            <span>Audio</span>
+          </a>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="hover:rotate-45 transition-transform active:translate-y-1 clickable" type="button">
+            <span class="material-symbols-outlined text-primary text-4xl">settings</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="stadium-bg relative overflow-hidden">
+        <div class="max-w-[1440px] mx-auto px-container-padding py-16 lg:py-24 flex flex-col lg:flex-row items-center justify-between relative z-10">
+          <div class="flex flex-col items-center lg:items-start text-center lg:text-left lg:w-1/2">
+            <div class="bg-primary-container text-on-primary-container px-8 py-3 rounded-full border-4 border-on-surface shadow-[0_6px_0_0_rgba(0,0,0,0.4)] mb-10 transform -rotate-2">
+              <p class="font-headline-lg text-headline-lg tracking-widest uppercase">Race. Drift. Win.</p>
+            </div>
+            <button id="btn-play" type="button" class="clickable btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-display-hero text-display-hero px-10 lg:px-16 py-6 lg:py-8 rounded-full border-4 border-on-surface shadow-[0_10px_0_0_rgba(0,0,0,0.5)] relative overflow-hidden group">
+              <div class="glossy-overlay absolute inset-0"></div>
+              <span class="relative z-10">PLAY NOW</span>
+            </button>
+          </div>
+          <div class="lg:w-1/2 flex justify-center mt-16 lg:mt-0 relative">
+            <div class="absolute inset-0 bg-secondary-container rounded-full opacity-20 blur-3xl scale-110 animate-pulse"></div>
+            <img alt="Capybara Mascot" class="w-full max-w-[600px] relative z-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvP0BuayGwKQS-EfbugSaHG7InPIYf0CCSztrTbDTC3g-YSDMiaKvUJ86aEkg01-irTS3oy3Ia8-1L4LrZLBsZ5IhskQ74TL_l7XTjfAz4YpvW7w7bF7vrLvYr2gBNxxSx8Foab6KC8JavDqzqfFHpgJ8aLeYhmCz9KJ6aAUlDljq1GmcpoIXmsWkEQB9i7K6PzArU-3oQHUCf_c_FMr5j8VdF8IL2VF-O-bAgE6caJyC4NFKI8oD6io_mfRtyIZpWo0ymoFdWWJI0Dhg">
+            <div class="absolute -top-10 -left-10 opacity-40 animate-pulse">
+              <span class="material-symbols-outlined text-white text-8xl rotate-12">flag</span>
+            </div>
+            <div class="absolute bottom-20 -right-10 opacity-30 animate-bounce">
+              <span class="material-symbols-outlined text-white text-9xl -rotate-12">cloud</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="max-w-[1440px] mx-auto px-container-padding py-16 lg:py-24">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <section class="lg:col-span-7">
+            <div class="flex items-center justify-between mb-8">
+              <h2 class="font-headline-lg text-headline-lg uppercase">Kart Garage</h2>
+              <div class="flex gap-4">
+                <button class="w-12 h-12 bg-white card-outline rounded-full flex items-center justify-center btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.1)] clickable" type="button">
+                  <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="w-12 h-12 bg-white card-outline rounded-full flex items-center justify-center btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.1)] clickable" type="button">
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+              </div>
+            </div>
+            <div class="bg-surface-container card-outline rounded-[40px] p-6 lg:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.1)]">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white card-outline rounded-3xl p-8 flex flex-col items-center justify-center transition-transform hover:rotate-1">
+                  <span class="bg-tertiary-fixed text-on-tertiary-fixed px-4 py-1.5 rounded-full text-title-md font-label-sm mb-6 border-4 border-on-surface shadow-[4px_4px_0_0_rgba(0,0,0,1)] uppercase">New!</span>
+                  <div class="w-48 h-48 mb-6">
+                    <img alt="Classic Kart Preview" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLvxfiL_DTSFLGLbcnRZPgpiFdvU_fJ3szoC_RotpW_qEJ8MN1r1rMxgiuMMwPruW7PV6IsF-QJcSoqIhvZDp8jbg2e4-aUMll6jpQQ1U0rXAXfIMuwa5WEDvieNwhqEIQXIl39pzLUbFKLYmPLb1ecPCgdQhSJqdBLsPINMSbssM7MQ2Rmg4IBzQwrg-GLSk9k_HkKE22r-_PKIDAtSKghV59u9Kj9PkCrAikE2QEtwX87rv_Q5gwSPZKgG">
+                  </div>
+                  <p class="font-headline-lg-mobile text-headline-lg-mobile mb-4">CLASSIC CAPY</p>
+                  <div class="flex gap-3">
+                    <div class="w-6 h-6 rounded-full bg-primary border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
+                    <div class="w-6 h-6 rounded-full bg-secondary-container border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
+                    <div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
+                  </div>
+                </div>
+                <div class="flex flex-col justify-center space-y-6">
+                  <div class="bg-white card-outline rounded-2xl p-6">
+                    <h4 class="font-title-md text-primary mb-2">SPEED</h4>
+                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
+                      <div class="h-full bg-primary w-[85%] border-r-2 border-on-surface"></div>
+                    </div>
+                  </div>
+                  <div class="bg-white card-outline rounded-2xl p-6">
+                    <h4 class="font-title-md text-secondary mb-2">HANDLING</h4>
+                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
+                      <div class="h-full bg-secondary w-[60%] border-r-2 border-on-surface"></div>
+                    </div>
+                  </div>
+                  <div class="bg-white card-outline rounded-2xl p-6">
+                    <h4 class="font-title-md text-tertiary mb-2">DRIFT</h4>
+                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
+                      <div class="h-full bg-tertiary w-[95%] border-r-2 border-on-surface"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="lg:col-span-5 flex flex-col justify-center">
+            <div class="bg-surface-variant card-outline rounded-[40px] p-8 lg:p-12 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.1)] relative overflow-hidden group">
+              <div class="glossy-overlay absolute inset-0 opacity-10"></div>
+              <div class="relative z-10">
+                <div class="w-32 h-32 mx-auto mb-8 bg-tertiary-fixed rounded-full border-4 border-on-surface flex items-center justify-center shadow-[0_8px_0_0_rgba(0,0,0,0.2)] transform group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined text-on-tertiary-fixed text-6xl" style="font-variation-settings: 'FILL' 1;">currency_bitcoin</span>
+                </div>
+                <h2 class="font-display-hero text-headline-lg mb-4 text-on-surface">GET YOUR $CAPYRACE</h2>
+                <p class="font-body-base text-title-md mb-10 text-on-surface-variant max-w-sm mx-auto">
+                  The ultimate utility token for the Capy Kart ecosystem. Unlock rare skins, entry into premium tournaments, and more!
+                </p>
+                <div class="flex flex-col gap-6">
+                  <button class="clickable bg-secondary text-white font-headline-lg py-6 rounded-3xl card-outline btn-3d-press shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-4 group/btn" type="button">
+                    <span class="relative z-10">BUY ON RAYDIUM</span>
+                    <span class="material-symbols-outlined text-4xl group-hover/btn:translate-x-2 transition-transform">arrow_forward</span>
+                  </button>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white card-outline rounded-2xl py-4">
+                      <span class="block font-label-sm text-on-surface-variant opacity-60">PRICE</span>
+                      <span class="font-title-md">$0.042</span>
+                    </div>
+                    <div class="bg-white card-outline rounded-2xl py-4">
+                      <span class="block font-label-sm text-on-surface-variant opacity-60">MCAP</span>
+                      <span class="font-title-md">$24.5M</span>
+                    </div>
+                  </div>
+                  <div class="mt-8 flex justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
+                    <div class="w-40 h-12 bg-on-surface rounded-xl flex items-center justify-center cursor-pointer clickable">
+                      <span class="text-white text-sm font-bold uppercase tracking-widest">DexScreener</span>
+                    </div>
+                    <div class="w-40 h-12 bg-on-surface rounded-xl flex items-center justify-center cursor-pointer clickable">
+                      <span class="text-white text-sm font-bold uppercase tracking-widest">Solscan</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="border-t-4 border-on-surface bg-surface-container py-12">
+      <div class="max-w-[1440px] mx-auto px-container-padding flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex flex-col items-center md:items-start">
+          <span class="font-headline-lg-mobile text-on-surface">$CAPYRACE</span>
+          <p class="font-label-sm text-on-surface-variant">© 2024 Capy Kart Arena. All rights reserved.</p>
+        </div>
+        <div class="flex gap-8">
+          <a class="font-title-md hover:text-primary transition-colors" href="#">Twitter</a>
+          <a class="font-title-md hover:text-secondary transition-colors" href="#">Discord</a>
+          <a class="font-title-md hover:text-tertiary transition-colors" href="#">Whitepaper</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="ui-container">
+    <div id="loading-screen">
+      <h1 class="font-display-hero text-display-hero text-white mb-8 uppercase tracking-wide">Capy Kart Arena</h1>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="font-title-md mt-4 text-white/90" id="loading-status">Mengunduh aset 3D sirkuit...</div>
+    </div>
+
+    <div id="hud" class="absolute inset-0">
+      <div class="absolute top-6 left-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-lap">LAP: 1 / 3</div>
+      <div class="absolute top-6 right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time">
+        TIME: 00:00.00<br>
+        <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
+      </div>
+      <div class="absolute bottom-6 left-6 bg-tertiary-fixed card-outline rounded-2xl px-5 py-3 font-title-md text-on-tertiary-fixed shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-coins">SOL COINS: 0</div>
+      <button class="clickable absolute bottom-6 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container card-outline rounded-xl px-4 py-2 font-label-sm shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="btn-reset" type="button">RESET POSISI (R)</button>
+      <div class="absolute bottom-6 right-6 bg-secondary-container text-white card-outline rounded-2xl px-5 py-3 font-headline-lg text-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-speed">0 km/h</div>
+    </div>
+
+    <div id="results-screen" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(420px,92vw)] bg-surface card-outline rounded-[32px] p-8 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.2)]">
+      <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase">Finish!</h2>
+      <div class="space-y-3 mb-8 font-title-md">
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Total Waktu:</span><span id="res-total-time">--:--.--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Best Lap:</span><span id="res-best-time">--:--.--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Koin SOL:</span><span id="res-coins">0 / 20</span></div>
+        <div class="flex justify-between"><span>Total Skor:</span><span id="res-score">0</span></div>
+      </div>
+      <button id="btn-replay" type="button" class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">MAIN LAGI</button>
+    </div>
+
+    <div id="countdown-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/40">
+      <div id="countdown-lights" class="flex gap-4 mb-6 bg-black/60 px-7 py-4 rounded-full border-2 border-white/20">
+        <div class="light-circle" id="light-1"></div>
+        <div class="light-circle" id="light-2"></div>
+        <div class="light-circle" id="light-3"></div>
+        <div class="light-circle" id="light-4"></div>
+        <div class="light-circle" id="light-5"></div>
+      </div>
+      <div id="countdown-text" class="font-display-hero text-[8rem] text-white drop-shadow-lg">10</div>
+    </div>
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
+  <script>
+    document.querySelectorAll('.btn-3d-press').forEach(btn => {
+      btn.addEventListener('mousedown', () => {
+        btn.style.boxShadow = '0 0px 0 0 rgba(0,0,0,0.2)';
+      });
+      btn.addEventListener('mouseup', () => {
+        btn.style.boxShadow = '';
+      });
+    });
+  </script>
 </body>
 </html>
