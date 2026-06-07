@@ -391,7 +391,7 @@ function updateCountdownUI(timeLeft: number) {
     cdText.textContent = seconds.toString();
     cdText.style.color = '#ffffff';
     cdText.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.6)';
-    
+
     if (seconds > 5) {
       lights.forEach(l => {
         if (l) l.className = 'light-circle';
@@ -416,15 +416,15 @@ function updateCountdownUI(timeLeft: number) {
  */
 function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
   const botPos = bot.spherePos;
-  
+
   // Gunakan pencarian lokal di sekitar waypoint sebelumnya untuk mencegah bot berbalik arah
   const scanRangeStart = -5;
   const scanRangeEnd = 15;
   const prevIdx = bot.closestWaypointIdx;
-  
+
   let minD2 = Infinity;
   let closestIdx = prevIdx;
-  
+
   for (let offset = scanRangeStart; offset <= scanRangeEnd; offset++) {
     const idx = (prevIdx + offset + waypoints.length) % waypoints.length;
     const wp = waypoints[idx];
@@ -434,34 +434,34 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
       closestIdx = idx;
     }
   }
-  
+
   bot.closestWaypointIdx = closestIdx;
-  
+
   // Targetkan titik lookahead di depan (misalnya 10 waypoint ke depan untuk mengikuti jalur lebih presisi)
   const lookAheadCount = 10;
   const targetIdx = (closestIdx + lookAheadCount) % waypoints.length;
   const targetWp = waypoints[targetIdx];
-  
+
   // Ubah posisi target ke local space bot
   const targetLocal = targetWp.clone().sub(botPos);
   const invQuat = bot.container.quaternion.clone().invert();
   targetLocal.applyQuaternion(invQuat);
-  
+
   // Hitung sudut deviasi target terhadap arah hadap bot
   // Local forward adalah (0, 0, 1), jadi sudut dihitung dengan Math.atan2(x, z)
   const angle = Math.atan2(targetLocal.x, targetLocal.z);
-  
+
   // Kemudi (steer): sesuaikan sensitivitas kemudi agar lebih responsif mengikuti tikungan
   // Gunakan nilai negatif (-angle) karena orientasi koordinat lokal setir terbalik
   let steer = -angle * 1.8;
   steer = THREE.MathUtils.clamp(steer, -1.0, 1.0);
-  
+
   // Gas (z): kurangi kecepatan jika sudut belokan tajam agar tidak understeer/oversteer keluar trek
   let gas = 0.85;
   if (Math.abs(steer) > 0.6) {
     gas = 0.45;
   }
-  
+
   return {
     x: steer,
     z: gas,
@@ -605,7 +605,7 @@ async function loadAssets() {
   loader.setDRACOLoader(dracoLoader);
   const progressFill = document.getElementById('progress-fill') as HTMLDivElement;
   const loadingStatus = document.getElementById('loading-status') as HTMLDivElement;
-  
+
   loadingStatus.textContent = 'Memuat sirkuit Solana City...';
   progressFill.style.width = '10%';
 
@@ -709,7 +709,7 @@ async function loadAssets() {
     const pointsObj = new THREE.Points(pointsGeo, pointsMat);
     scene.add(pointsObj);
     sceneryData = setupScenery(scene, trackData.centerLineCurve);
-    
+
     progressFill.style.width = '60%';
     loadingStatus.textContent = 'Memuat pembalap Capybara...';
 
@@ -791,7 +791,7 @@ async function loadAssets() {
 function startRace() {
   (document.getElementById('main-menu') as HTMLDivElement).style.display = 'none';
   (document.getElementById('hud') as HTMLDivElement).style.display = 'block';
-  
+
   currentState = 'COUNTDOWN';
   countdownTimer = 10.0;
 
@@ -834,7 +834,7 @@ function startRace() {
 function finishRace() {
   currentState = 'FINISHED';
   (document.getElementById('hud') as HTMLDivElement).style.display = 'none';
-  
+
   const resultsScreen = document.getElementById('results-screen') as HTMLDivElement;
   resultsScreen.style.display = 'block';
 
@@ -858,7 +858,7 @@ function finishRace() {
 function playVictoryJingle() {
   const ctx = (THREE.AudioContext.getContext() as AudioContext);
   if (!ctx) return;
-  
+
   const melody = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
   melody.forEach((freq, idx) => {
     const osc = ctx.createOscillator();
@@ -922,7 +922,7 @@ function animate() {
     // Karts tidak bergerak, beri input kosong
     const emptyInput = { x: 0, z: 0, touchActive: false };
     updateWorld(physicsSystem.world, {}, dt);
-    
+
     vehicle.update(dt, emptyInput);
     bots.forEach(bot => {
       bot.update(dt, emptyInput);
@@ -986,7 +986,7 @@ function animate() {
     // Sinkronisasi suara rem/drift (skid)
     if (skidSound && skidSound.buffer) {
       const isSkidding = (vehicle.driftIntensity > 0.42 && Math.abs(vehicle.linearSpeed) > 0.2) ||
-                         (inputState.z < 0 && vehicle.linearSpeed > 0.2);
+        (inputState.z < 0 && vehicle.linearSpeed > 0.2);
 
       if (isSkidding) {
         if (!skidSound.isPlaying) {
@@ -1015,7 +1015,7 @@ function animate() {
           coin.visible = false;
           coinsCollected++;
           score += 100;
-          
+
           (document.getElementById('hud-coins') as HTMLDivElement).textContent = `SOL COINS: ${coinsCollected}`;
           playCoinChime();
         }
@@ -1027,7 +1027,7 @@ function animate() {
       const dist = vehicle.spherePos.distanceTo(pad.position);
       if (dist < 2.5) {
         // Cek apakah tidak sedang dalam boost aktif
-        if (!vehicle.driftIntensity || Math.random() < 0.15) { 
+        if (!vehicle.driftIntensity || Math.random() < 0.15) {
           // Cegah trigger berulang dalam satu frame
           vehicle.triggerBoost(1.8);
           playBoostWhoosh();
@@ -1042,7 +1042,7 @@ function animate() {
       if (distToCp < 9.0) {
         // Lanjut ke checkpoint berikutnya
         nextCheckpointIdx = (nextCheckpointIdx + 1) % trackData.checkpoints.length;
-        
+
         // Melewati Garis Start/Finish checkpoint (index 0)
         if (nextCheckpointIdx === 0) {
           // Putaran lap selesai
@@ -1050,10 +1050,10 @@ function animate() {
             if (lapTimer < bestLapTime) {
               bestLapTime = lapTimer;
             }
-            
+
             currentLap++;
             lapTimer = 0;
-            
+
             if (currentLap > TOTAL_LAPS) {
               finishRace();
             } else {

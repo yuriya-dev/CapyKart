@@ -98,3 +98,42 @@ Virtual Joystick untuk pengguna perangkat mobile diatur di dalam file [Controls.
         z = (-jx + jy) * Math.SQRT1_2 / mag;
         ```
     *   **Penjelasan:** Kode ini merotasi input joystick sebesar 45 derajat agar selaras dengan sudut pandang kamera 3D yang serong (isometric view), sehingga menggeser joystick ke arah atas visual layar akan menggerakkan kart maju serong ke depan sesuai perspektif kamera.
+
+---
+
+## 5. Sinkronisasi dan Visualisasi Waypoint Sirkuit (Circuit Waypoints Alignment)
+
+Waypoint (titik bantu jalan) digunakan oleh bot AI untuk navigasi di sepanjang trek. Posisi waypoint asli dihitung secara relatif terhadap lintasan, namun jika model visual trek (GLTF) bergeser saat diekspor dari Blender, waypoint ini harus disinkronkan secara manual.
+
+### A. Mengatur Pergeseran Waypoint (Waypoint Shift)
+Seluruh kalkulasi pergeseran waypoint diatur dalam file [main.ts](file:///f:/Hackathon/capy-racing-3d/src/main.ts).
+
+*   **Pengaturan Pergeseran (Shift Offset):**
+    *   **Lokasi:** Baris 695-699 di `main.ts`
+    *   **Variabel:**
+        ```typescript
+        const shift = new THREE.Vector3(
+          new_x_center - 0.15 - 25.0, // Menggeser mundur 25 meter di sumbu X agar sinkron dengan jalan
+          0,
+          new_z_center - (-48.15)
+        );
+        ```
+    *   **Penjelasan:**
+        *   `new_x_center - 0.15 - 25.0`: Menggeser waypoint sepanjang sumbu longitudinal (X). Nilai `-25.0` digunakan untuk menggeser waypoint mundur sejauh 25 meter agar sejajar dengan posisi garis start yang baru. Jika posisi waypoint kurang mundur, ubah nilainya menjadi lebih negatif (misal `-30.0`). Jika terlalu mundur (kurang maju), kurangi nilainya (misal `-20.0`).
+        *   `new_z_center - (-48.15)`: Menggeser posisi lateral (Z) waypoint agar pas berada di tengah-tengah jalan raya secara horizontal.
+
+### B. Menampilkan/Menyembunyikan Titik Visualisasi Waypoint
+Untuk mempermudah penyelarasan waypoint dengan lintasan visual di layar browser, Anda dapat mengaktifkan titik visualisasi berwarna merah di game.
+
+*   **Kode Visualisasi:**
+    *   **Lokasi:** Baris 706-710 di `main.ts`
+    *   **Kode:**
+        ```typescript
+        // Visualisasi waypoints (Garis titik merah)
+        const pointsGeo = new THREE.BufferGeometry().setFromPoints(trackData.waypoints);
+        const pointsMat = new THREE.PointsMaterial({ color: 0xff0000, size: 0.8 });
+        const pointsObj = new THREE.Points(pointsGeo, pointsMat);
+        scene.add(pointsObj);
+        ```
+    *   **Penjelasan:** Secara bawaan, kode ini memunculkan bulatan merah (`THREE.Points`) pada setiap koordinat waypoint di layar.
+        *   **Untuk mematikan/menyembunyikan titik merah di produksi (release):** Silakan beri komentar (`//`) atau hapus baris `scene.add(pointsObj);` di file `main.ts`.
