@@ -24,7 +24,7 @@ import { MenuCinematic } from './core/MenuCinematic.ts';
 import { DriftMarks } from './core/DriftMarks.ts';
 
 // State Game
-type GameState = 'LOADING' | 'MENU' | 'COUNTDOWN' | 'RACING' | 'FINISHED';
+type GameState = 'LOADING' | 'MENU' | 'COUNTDOWN' | 'RACING' | 'PAUSED' | 'FINISHED';
 let currentState: GameState = 'LOADING';
 let countdownTimer = 0;
 
@@ -301,13 +301,13 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
   let gas: number;
   if (turnLoad > 1.2) {
     // Tikungan sangat tajam: melambat signifikan tapi tetap bergerak
-    gas = 0.5;
+    gas = 0.6;
   } else if (turnLoad > 0.7) {
     // Tikungan tajam
-    gas = 0.7;
+    gas = 0.85;
   } else if (turnLoad > 0.4) {
     // Tikungan sedang
-    gas = 0.85;
+    gas = 0.95;
   } else {
     // Trek lurus: kecepatan penuh
     gas = 1.0;
@@ -591,6 +591,8 @@ async function loadAssets() {
 
     vehicle = new Vehicle();
     const vehicleGroup = vehicle.init(capyGltf);
+    // Apply kart1.png to player vehicle kart body (suit remains default GLB texture)
+    vehicle.setCustomTextures('/capy_suit_1.png', '/kart1.png');
     scene.add(vehicleGroup);
 
     // Muat 3 bot lawan dengan model yang sama dan berikan tekstur kustom yang unik (suit 2-4, kart 2-4)
@@ -1116,7 +1118,7 @@ function animate() {
     const speedKmh = Math.floor(Math.abs(vehicle.linearSpeed) * 85);
     (document.getElementById('hud-speed') as HTMLDivElement).textContent = `${speedKmh} km/h`;
 
-  } else if (currentState === 'MENU' || currentState === 'FINISHED') {
+  } else if (currentState === 'MENU' || currentState === 'FINISHED' || currentState === 'PAUSED') {
     menuCinematic.update(dt, time, cameraSystem.camera);
   }
 
@@ -1141,6 +1143,41 @@ document.getElementById('hud-booster-container')?.addEventListener('click', () =
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {
   startRace();
+});
+
+// Pause / Resume
+const pauseScreen = document.getElementById('pause-screen') as HTMLDivElement;
+
+function pauseGame() {
+  if (currentState !== 'RACING') return;
+  currentState = 'PAUSED';
+  pauseScreen.style.display = 'flex';
+  if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.3);
+}
+
+function resumeGame() {
+  if (currentState !== 'PAUSED') return;
+  currentState = 'RACING';
+  pauseScreen.style.display = 'none';
+  if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.85);
+}
+
+document.getElementById('btn-pause')?.addEventListener('click', pauseGame);
+document.getElementById('btn-resume')?.addEventListener('click', resumeGame);
+document.getElementById('btn-restart')?.addEventListener('click', () => {
+  pauseScreen.style.display = 'none';
+  startRace();
+});
+
+// ESC key: pause when racing, resume when paused
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') {
+    if (currentState === 'RACING') {
+      pauseGame();
+    } else if (currentState === 'PAUSED') {
+      resumeGame();
+    }
+  }
 });
 
 // Modal Settings Handlers

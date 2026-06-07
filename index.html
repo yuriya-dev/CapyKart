@@ -415,6 +415,9 @@
         <button id="btn-settings-hud" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:rotate-45 transition-transform" style="pointer-events: auto;">
           <span class="material-symbols-outlined text-primary text-2xl">settings</span>
         </button>
+        <button id="btn-pause" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:scale-110 transition-transform active:scale-95" style="pointer-events: auto;" title="Pause (ESC)">
+          <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+        </button>
       </div>
       <div class="absolute top-6 right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time">
         TIME: 00:00.00<br>
@@ -457,6 +460,27 @@
         <div class="flex justify-between"><span>Total Score:</span><span id="res-score">0</span></div>
       </div>
       <button id="btn-replay" type="button" class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">PLAY AGAIN</button>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/60" style="display:none;">
+      <div class="bg-surface card-outline rounded-[32px] p-10 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] text-center">
+        <div class="w-20 h-20 mx-auto mb-6 bg-secondary rounded-full border-4 border-on-surface flex items-center justify-center shadow-[0_6px_0_0_rgba(0,0,0,0.2)]">
+          <span class="material-symbols-outlined text-white text-5xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+        </div>
+        <h2 class="font-display-hero text-headline-lg text-primary mb-8 uppercase tracking-wide">Paused</h2>
+        <div class="flex flex-col gap-4">
+          <button id="btn-resume" type="button" class="clickable w-full btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+            RESUME
+          </button>
+          <button id="btn-restart" type="button" class="clickable w-full btn-3d-press bg-primary-container text-on-primary-container font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">restart_alt</span>
+            RESTART RACE
+          </button>
+        </div>
+        <p class="mt-6 text-sm text-on-surface-variant font-bold">Press ESC to resume</p>
+      </div>
     </div>
 
     <div id="countdown-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/40">
