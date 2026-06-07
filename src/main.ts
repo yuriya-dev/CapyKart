@@ -23,8 +23,9 @@ import { FollowCamera } from './core/Camera.ts';
 import { DriftMarks } from './core/DriftMarks.ts';
 
 // State Game
-type GameState = 'LOADING' | 'MENU' | 'RACING' | 'FINISHED';
+type GameState = 'LOADING' | 'MENU' | 'COUNTDOWN' | 'RACING' | 'FINISHED';
 let currentState: GameState = 'LOADING';
+let countdownTimer = 0;
 
 // Variabel Utama
 let renderer: THREE.WebGLRenderer;
@@ -34,6 +35,7 @@ let composer: EffectComposer;
 let physicsSystem: ReturnType<typeof initPhysics>;
 
 let vehicle: Vehicle;
+let bots: Vehicle[] = [];
 let controls: Controls;
 let trackData: ReturnType<typeof buildTrack>;
 let sceneryData: ReturnType<typeof setupScenery>;
@@ -235,6 +237,60 @@ uiStyle.textContent = `
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 6px;
   }
+  /* Countdown Screen */
+  #countdown-screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 200;
+    background: rgba(13, 13, 26, 0.45);
+    transition: opacity 0.5s ease;
+  }
+  #countdown-lights {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 14px 28px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  }
+  .light-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1a1a24;
+    border: 2px solid #2d2d3a;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .light-red {
+    background: radial-gradient(circle, #ff3b30 0%, #a7140d 100%) !important;
+    border-color: #ff6b62 !important;
+    box-shadow: 0 0 25px #ff3b30, inset 0 0 8px rgba(255,255,255,0.6) !important;
+  }
+  .light-green {
+    background: radial-gradient(circle, #4cd964 0%, #147a24 100%) !important;
+    border-color: #72f287 !important;
+    box-shadow: 0 0 30px #4cd964, inset 0 0 8px rgba(255,255,255,0.6) !important;
+  }
+  #countdown-text {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 40px rgba(255, 255, 255, 0.7);
+    animation: countdown-pulse 1s infinite;
+  }
+  @keyframes countdown-pulse {
+    0% { transform: scale(1.0); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1.0); }
+  }
 `;
 document.head.appendChild(uiStyle);
 
@@ -283,6 +339,18 @@ uiContainer.innerHTML = `
     </div>
     <button class="menu-btn clickable" id="btn-replay">MAIN LAGI</button>
   </div>
+
+  <!-- Countdown Overlay -->
+  <div id="countdown-screen">
+    <div id="countdown-lights">
+      <div class="light-circle" id="light-1"></div>
+      <div class="light-circle" id="light-2"></div>
+      <div class="light-circle" id="light-3"></div>
+      <div class="light-circle" id="light-4"></div>
+      <div class="light-circle" id="light-5"></div>
+    </div>
+    <div id="countdown-text">10</div>
+  </div>
 `;
 
 // Fungsi Format Waktu
@@ -292,6 +360,113 @@ function formatTime(ms: number): string {
   const s = Math.floor((ms % 60000) / 1000);
   const cs = Math.floor((ms % 1000) / 10);
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Memperbarui tampilan UI Lampu Countdown
+ */
+function updateCountdownUI(timeLeft: number) {
+  const cdText = document.getElementById('countdown-text') as HTMLDivElement;
+  const lights = [
+    document.getElementById('light-1') as HTMLDivElement,
+    document.getElementById('light-2') as HTMLDivElement,
+    document.getElementById('light-3') as HTMLDivElement,
+    document.getElementById('light-4') as HTMLDivElement,
+    document.getElementById('light-5') as HTMLDivElement
+  ];
+
+  if (!cdText) return;
+
+  if (timeLeft <= 0) {
+    cdText.textContent = 'GO!';
+    cdText.style.color = '#14F195';
+    cdText.style.textShadow = '0 0 30px rgba(20, 241, 149, 0.8)';
+    lights.forEach(l => {
+      if (l) {
+        l.className = 'light-circle light-green';
+      }
+    });
+  } else {
+    const seconds = Math.ceil(timeLeft);
+    cdText.textContent = seconds.toString();
+    cdText.style.color = '#ffffff';
+    cdText.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.6)';
+    
+    if (seconds > 5) {
+      lights.forEach(l => {
+        if (l) l.className = 'light-circle';
+      });
+    } else {
+      const redCount = 6 - seconds;
+      lights.forEach((l, idx) => {
+        if (l) {
+          if (idx < redCount) {
+            l.className = 'light-circle light-red';
+          } else {
+            l.className = 'light-circle';
+          }
+        }
+      });
+    }
+  }
+}
+
+/**
+ * Menghitung input kemudi dan gas untuk bot AI agar mengikuti waypoint sirkuit
+ */
+function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
+  const botPos = bot.spherePos;
+  
+  // Gunakan pencarian lokal di sekitar waypoint sebelumnya untuk mencegah bot berbalik arah
+  const scanRangeStart = -5;
+  const scanRangeEnd = 15;
+  const prevIdx = bot.closestWaypointIdx;
+  
+  let minD2 = Infinity;
+  let closestIdx = prevIdx;
+  
+  for (let offset = scanRangeStart; offset <= scanRangeEnd; offset++) {
+    const idx = (prevIdx + offset + waypoints.length) % waypoints.length;
+    const wp = waypoints[idx];
+    const d2 = botPos.distanceToSquared(wp);
+    if (d2 < minD2) {
+      minD2 = d2;
+      closestIdx = idx;
+    }
+  }
+  
+  bot.closestWaypointIdx = closestIdx;
+  
+  // Targetkan titik lookahead di depan (misalnya 10 waypoint ke depan untuk mengikuti jalur lebih presisi)
+  const lookAheadCount = 10;
+  const targetIdx = (closestIdx + lookAheadCount) % waypoints.length;
+  const targetWp = waypoints[targetIdx];
+  
+  // Ubah posisi target ke local space bot
+  const targetLocal = targetWp.clone().sub(botPos);
+  const invQuat = bot.container.quaternion.clone().invert();
+  targetLocal.applyQuaternion(invQuat);
+  
+  // Hitung sudut deviasi target terhadap arah hadap bot
+  // Local forward adalah (0, 0, 1), jadi sudut dihitung dengan Math.atan2(x, z)
+  const angle = Math.atan2(targetLocal.x, targetLocal.z);
+  
+  // Kemudi (steer): sesuaikan sensitivitas kemudi agar lebih responsif mengikuti tikungan
+  // Gunakan nilai negatif (-angle) karena orientasi koordinat lokal setir terbalik
+  let steer = -angle * 1.8;
+  steer = THREE.MathUtils.clamp(steer, -1.0, 1.0);
+  
+  // Gas (z): kurangi kecepatan jika sudut belokan tajam agar tidak understeer/oversteer keluar trek
+  let gas = 0.85;
+  if (Math.abs(steer) > 0.6) {
+    gas = 0.45;
+  }
+  
+  return {
+    x: steer,
+    z: gas,
+    touchActive: false
+  };
 }
 
 /**
@@ -495,9 +670,44 @@ async function loadAssets() {
       });
     });
 
+    // Tentukan posisi start dari startLineGltf
+    const getStartPos = (meshName: string, fallback: THREE.Vector3): THREE.Vector3 => {
+      const obj = startLineGltf.scene.getObjectByName(meshName);
+      if (obj) {
+        const pos = new THREE.Vector3();
+        obj.getWorldPosition(pos);
+        pos.y += 1.0; // Naikkan sedikit agar tidak tembus tanah saat spawn
+        return pos;
+      }
+      return fallback;
+    };
+
+    const spawnPositions = {
+      start_1: getStartPos('start_1', new THREE.Vector3(-2.0, 1.2, -48.0)),
+      start_2: getStartPos('start_2', new THREE.Vector3(2.0, 1.2, -48.0)),
+      start_3: getStartPos('start_3', new THREE.Vector3(-2.0, 1.2, -45.0)),
+      start_4: getStartPos('start_4', new THREE.Vector3(2.0, 1.2, -45.0))
+    };
+
+    // Hitung pergeseran sirkuit (shift) secara dinamis agar pas dengan jalan baru
+    const new_x_center = (spawnPositions.start_1.x + spawnPositions.start_3.x) / 2;
+    const new_z_center = (spawnPositions.start_1.z + spawnPositions.start_2.z) / 2;
+    const shift = new THREE.Vector3(
+      new_x_center - 0.15 - 25.0, // Geser mundur 25 meter di sumbu X agar sinkron dengan jalan
+      0,
+      new_z_center - (-48.15)
+    );
+    console.log("DYNAMIC SHIFT APPLIED TO WAYPOINTS:", shift);
+
     // 2. Bangun Trek dan Scenery secara Prosedural (koin, rintangan, dsb)
-    trackData = buildTrack();
+    trackData = buildTrack(shift);
     scene.add(trackData.group);
+
+    // Visualisasi waypoints
+    const pointsGeo = new THREE.BufferGeometry().setFromPoints(trackData.waypoints);
+    const pointsMat = new THREE.PointsMaterial({ color: 0xff0000, size: 0.8 });
+    const pointsObj = new THREE.Points(pointsGeo, pointsMat);
+    scene.add(pointsObj);
     sceneryData = setupScenery(scene, trackData.centerLineCurve);
     
     progressFill.style.width = '60%';
@@ -515,6 +725,15 @@ async function loadAssets() {
     const vehicleGroup = vehicle.init(capyGltf);
     scene.add(vehicleGroup);
 
+    // Muat 3 bot lawan dengan model yang sama
+    bots = [];
+    for (let i = 0; i < 3; i++) {
+      const bot = new Vehicle();
+      const botGroup = bot.init(capyGltf);
+      scene.add(botGroup);
+      bots.push(bot);
+    }
+
     driftMarks = new DriftMarks(scene);
     vehicle.onReset = () => {
       driftMarks.reset();
@@ -527,12 +746,24 @@ async function loadAssets() {
       buildModelColliders(physicsSystem, wallMesh);
     });
 
-    // Pasang rigid body dynamic ke kart di garis start
-    const spawnPos = new THREE.Vector3(-0.03, 1.2, -45.67);
-    const body = createVehicleBody(physicsSystem, spawnPos);
+
+
+    // Pasang rigid body dynamic ke kart player di start_3
+    vehicle.startPosition.copy(spawnPositions.start_3);
+    const body = createVehicleBody(physicsSystem, vehicle.startPosition);
     vehicle.rigidBody = body;
     vehicle.physicsWorld = physicsSystem.world;
     vehicle.resetPosition();
+
+    // Pasang rigid body dynamic ke kart bots di start_1, start_2, start_4
+    const botStarts = [spawnPositions.start_1, spawnPositions.start_2, spawnPositions.start_4];
+    bots.forEach((bot, idx) => {
+      bot.startPosition.copy(botStarts[idx]);
+      const botBody = createVehicleBody(physicsSystem, bot.startPosition);
+      bot.rigidBody = botBody;
+      bot.physicsWorld = physicsSystem.world;
+      bot.resetPosition();
+    });
 
     // 5. Siapkan Kontrol
     controls = new Controls();
@@ -561,7 +792,16 @@ function startRace() {
   (document.getElementById('main-menu') as HTMLDivElement).style.display = 'none';
   (document.getElementById('hud') as HTMLDivElement).style.display = 'block';
   
-  currentState = 'RACING';
+  currentState = 'COUNTDOWN';
+  countdownTimer = 10.0;
+
+  const cdScreen = document.getElementById('countdown-screen') as HTMLDivElement;
+  if (cdScreen) {
+    cdScreen.style.display = 'flex';
+    cdScreen.style.opacity = '1';
+  }
+  updateCountdownUI(countdownTimer);
+
   coinsCollected = 0;
   score = 0;
   currentLap = 1;
@@ -571,6 +811,9 @@ function startRace() {
 
   // Reset posisi kart & kembalikan koin terlihat
   vehicle.resetPosition();
+  bots.forEach(bot => {
+    bot.resetPosition();
+  });
   sceneryData.coins.forEach(c => {
     c.visible = true;
   });
@@ -672,7 +915,46 @@ function animate() {
     (screen.material as THREE.MeshLambertMaterial).emissive.setHSL(hue, 1.0, 0.5);
   });
 
-  if (currentState === 'RACING') {
+  if (currentState === 'COUNTDOWN') {
+    countdownTimer -= dt;
+    updateCountdownUI(countdownTimer);
+
+    // Karts tidak bergerak, beri input kosong
+    const emptyInput = { x: 0, z: 0, touchActive: false };
+    updateWorld(physicsSystem.world, {}, dt);
+    
+    vehicle.update(dt, emptyInput);
+    bots.forEach(bot => {
+      bot.update(dt, emptyInput);
+    });
+
+    // Perbarui kamera pengikut (pemain bisa orbit sebelum mulai)
+    const inputState = controls.update();
+    const isAccelerating = inputState.z > 0 || (inputState.touchActive && (inputState.x !== 0 || inputState.z !== 0));
+    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating);
+
+    // Mesin idling
+    if (engineSound.isPlaying) {
+      engineSound.setPlaybackRate(0.85);
+    }
+
+    // Update speedometer ke 0
+    (document.getElementById('hud-speed') as HTMLDivElement).textContent = `0 km/h`;
+
+    if (countdownTimer <= 0) {
+      currentState = 'RACING';
+      // Fade out countdown screen setelah 1.5 detik
+      setTimeout(() => {
+        const cdScreen = document.getElementById('countdown-screen') as HTMLDivElement;
+        if (cdScreen) {
+          cdScreen.style.opacity = '0';
+          setTimeout(() => {
+            cdScreen.style.display = 'none';
+          }, 500);
+        }
+      }, 1500);
+    }
+  } else if (currentState === 'RACING') {
     lapTimer += dt;
     (document.getElementById('hud-time') as HTMLDivElement).innerHTML = `
       TIME: ${formatTime(lapTimer * 1000)}<br>
@@ -685,6 +967,12 @@ function animate() {
 
     // Perbarui logika pergerakan kart
     vehicle.update(dt, inputState);
+
+    // Perbarui logika pergerakan kart bot
+    bots.forEach((bot) => {
+      const botInput = calculateBotInput(bot, trackData.waypoints);
+      bot.update(dt, botInput);
+    });
 
     // Update drift tire tracks
     driftMarks.update(vehicle);
@@ -716,7 +1004,8 @@ function animate() {
     }
 
     // Perbarui kamera pengikut
-    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed);
+    const isAccelerating = inputState.z > 0 || (inputState.touchActive && (inputState.x !== 0 || inputState.z !== 0));
+    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating);
 
     // Deteksi Ambil Koin SOL
     sceneryData.coins.forEach((coin) => {

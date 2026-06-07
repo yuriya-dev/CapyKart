@@ -14,17 +14,18 @@ export interface AssembledTrack {
   centerLineCurve: THREE.CatmullRomCurve3;
   checkpoints: THREE.Vector3[];
   boostPads: { position: THREE.Vector3; rotationY: number }[];
+  waypoints: THREE.Vector3[];
 }
 
 /**
  * Merakit data sirkuit dari waypoint dan mengembalikan objek AssembledTrack.
  */
-export function buildTrack(): AssembledTrack {
+export function buildTrack(shift = new THREE.Vector3(0, 0, 0)): AssembledTrack {
   const trackGroup = new THREE.Group();
   trackGroup.name = 'track_circuit';
   
   // 1. Bangun CatmullRomCurve3 dari waypoints JSON
-  const points = waypointsData.map(w => new THREE.Vector3(w.x, w.y, w.z));
+  const points = waypointsData.map(w => new THREE.Vector3(w.x + shift.x, w.y + shift.y, w.z + shift.z));
   const centerLineCurve = new THREE.CatmullRomCurve3(points, true, 'centripetal');
   
   // 2. Tempatkan checkpoints secara merata (0%, 25%, 50%, 75% dari lintasan)
@@ -73,7 +74,8 @@ export function buildTrack(): AssembledTrack {
     group: trackGroup,
     centerLineCurve,
     checkpoints,
-    boostPads
+    boostPads,
+    waypoints: points
   };
 }
 

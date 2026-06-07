@@ -36,6 +36,7 @@ export class Vehicle {
   public angularSpeed = 0;
   public acceleration = 0;
 
+  public startPosition = new THREE.Vector3(-0.03, 1.2, -45.67);
   public spherePos = new THREE.Vector3(0, 0.5, 0);
   public sphereVel = new THREE.Vector3();
 
@@ -57,6 +58,7 @@ export class Vehicle {
   private driveAction: THREE.AnimationAction | null = null;
 
   public driftIntensity = 0;
+  public closestWaypointIdx = 0;
   private boostTimer = 0;
   private isBoosting = false;
 
@@ -297,12 +299,12 @@ export class Vehicle {
    */
   public resetPosition() {
     if (this.rigidBody) {
-      rigidBody.setPosition(this.physicsWorld, this.rigidBody, [-0.03, 1.2, -45.67], false);
+      rigidBody.setPosition(this.physicsWorld, this.rigidBody, [this.startPosition.x, this.startPosition.y, this.startPosition.z], false);
       rigidBody.setLinearVelocity(this.physicsWorld, this.rigidBody, [0, 0, 0]);
       rigidBody.setAngularVelocity(this.physicsWorld, this.rigidBody, [0, 0, 0]);
     }
 
-    this.spherePos.set(-0.03, 1.2, -45.67);
+    this.spherePos.copy(this.startPosition);
     this.sphereVel.set(0, 0, 0);
     this.linearSpeed = 0;
     this.angularSpeed = 0;
@@ -313,6 +315,7 @@ export class Vehicle {
     this.prevModelPos.copy(this.container.position);
     this.isBoosting = false;
     this.boostTimer = 0;
+    this.closestWaypointIdx = 0;
     if (this.onReset) {
       this.onReset();
     }
