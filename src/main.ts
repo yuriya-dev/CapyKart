@@ -465,7 +465,7 @@ async function loadAssets() {
   const progressFill = document.getElementById('progress-fill') as HTMLDivElement;
   const loadingStatus = document.getElementById('loading-status') as HTMLDivElement;
 
-  loadingStatus.textContent = 'Memuat sirkuit Solana City...';
+  loadingStatus.textContent = 'Loading Solana City circuit...';
   progressFill.style.width = '10%';
 
   try {
@@ -579,7 +579,7 @@ async function loadAssets() {
     sceneryData = setupScenery(scene, trackData.centerLineCurve);
 
     progressFill.style.width = '60%';
-    loadingStatus.textContent = 'Memuat pembalap Capybara...';
+    loadingStatus.textContent = 'Loading Capybara racers...';
 
     // 3. Muat Model Capybara Kart
     const capyGltf = await new Promise<any>((resolve, reject) => {
@@ -653,8 +653,8 @@ async function loadAssets() {
     }, 400);
 
   } catch (error) {
-    console.error('Gagal memuat aset:', error);
-    loadingStatus.textContent = 'Gagal memuat aset. Hubungi admin hackathon!';
+    console.error('Failed to load assets:', error);
+    loadingStatus.textContent = 'Failed to load assets. Contact hackathon admin!';
   }
 }
 
@@ -970,6 +970,11 @@ function animate() {
 
       currentLap++;
       lapTimer = 0;
+
+      // Munculkan lagi koin bubble Solana di lintasan saat lap baru
+      sceneryData.coins.forEach(c => {
+        c.visible = true;
+      });
 
       if (currentLap > TOTAL_LAPS) {
         finishRace();

@@ -381,7 +381,7 @@
     <div id="loading-screen">
       <h1 class="font-display-hero text-display-hero text-white mb-8 uppercase tracking-wide">Capy Kart Arena</h1>
       <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-      <div class="font-title-md mt-4 text-white/90" id="loading-status">Mengunduh aset 3D sirkuit...</div>
+      <div class="font-title-md mt-4 text-white/90" id="loading-status">Downloading track 3D assets...</div>
     </div>
 
     <!-- Modal Pengaturan Volume -->
@@ -390,21 +390,21 @@
         <button id="btn-settings-close" class="clickable absolute top-4 right-4 text-on-surface-variant hover:scale-110 active:scale-95 transition-transform">
           <span class="material-symbols-outlined text-3xl">close</span>
         </button>
-        <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase tracking-wide">PENGATURAN</h2>
+        <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase tracking-wide">SETTINGS</h2>
         <div class="space-y-6 text-left">
           <!-- Slider Volume -->
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center text-sm font-bold text-on-surface">
               <span class="flex items-center gap-1.5">
                 <span id="volume-icon" class="material-symbols-outlined text-2xl text-secondary">volume_up</span>
-                VOLUME SUARA
+                SOUND VOLUME
               </span>
               <span id="volume-pct-text">80%</span>
             </div>
             <input type="range" id="volume-slider" min="0" max="100" value="80" class="clickable w-full h-3 bg-surface-container rounded-full appearance-none cursor-pointer border-2 border-on-surface accent-secondary [&::-webkit-slider-runnable-track]:bg-surface-container [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-secondary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-on-surface [&::-webkit-slider-thumb]:-mt-2.5">
           </div>
         </div>
-        <button id="btn-settings-save" type="button" class="clickable w-full mt-8 btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">SIMPAN</button>
+        <button id="btn-settings-save" type="button" class="clickable w-full mt-8 btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">SAVE</button>
       </div>
     </div>
 
@@ -449,12 +449,12 @@
     <div id="results-screen" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(420px,92vw)] bg-surface card-outline rounded-[32px] p-8 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.2)]">
       <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase">Finish!</h2>
       <div class="space-y-3 mb-8 font-title-md">
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Total Waktu:</span><span id="res-total-time">--:--.--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Total Time:</span><span id="res-total-time">--:--.--</span></div>
         <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Best Lap:</span><span id="res-best-time">--:--.--</span></div>
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Koin SOL:</span><span id="res-coins">0 / 5</span></div>
-        <div class="flex justify-between"><span>Total Skor:</span><span id="res-score">0</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>SOL Coins:</span><span id="res-coins">0 / 5</span></div>
+        <div class="flex justify-between"><span>Total Score:</span><span id="res-score">0</span></div>
       </div>
-      <button id="btn-replay" type="button" class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">MAIN LAGI</button>
+      <button id="btn-replay" type="button" class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">PLAY AGAIN</button>
     </div>
 
     <div id="countdown-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/40">
