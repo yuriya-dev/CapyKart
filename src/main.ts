@@ -53,6 +53,7 @@ let audioListener: THREE.AudioListener;
 let engineSound: THREE.Audio;
 let coinSound: THREE.Audio;
 let boostSound: THREE.Audio;
+let skidSound: THREE.Audio;
 
 // Timer & Clock
 const clock = new THREE.Clock();
@@ -338,6 +339,7 @@ function setupAudio() {
   engineSound = new THREE.Audio(audioListener);
   coinSound = new THREE.Audio(audioListener);
   boostSound = new THREE.Audio(audioListener);
+  skidSound = new THREE.Audio(audioListener);
 
   const audioLoader = new THREE.AudioLoader();
 
@@ -353,6 +355,13 @@ function setupAudio() {
     // Kita gunakan buffer ini untuk boost/skid
     boostSound.setBuffer(buffer);
     boostSound.setVolume(0.4);
+  });
+
+  // Load suara rem/skid/drift
+  audioLoader.load('audio/skid.ogg', (buffer) => {
+    skidSound.setBuffer(buffer);
+    skidSound.setLoop(true);
+    skidSound.setVolume(0.0);
   });
 
   // Load chimes ambil koin (jika gagal, kita sintesis chimes sederhana)
@@ -426,35 +435,64 @@ async function loadAssets() {
   progressFill.style.width = '10%';
 
   try {
-    // 1. Muat Model Map GLB
-    const mapGltf = await new Promise<any>((resolve, reject) => {
-      loader.load('models/map_v3.glb', resolve, (xhr) => {
-        const pct = Math.floor((xhr.loaded / (xhr.total || 5432152)) * 50);
-        progressFill.style.width = `${10 + pct}%`;
-      }, reject);
-    });
+    // 1. Muat Model Map GLB secara Paralel (3 Berkas)
+    const loadedSizes = { track: 0, terrain: 0, start_line: 0 };
+    const totalSizes = { track: 25680520, terrain: 4942704, start_line: 294620 };
+    const totalBytes = totalSizes.track + totalSizes.terrain + totalSizes.start_line;
 
-    const wall2 = mapGltf.scene.getObjectByName('wall2') as THREE.Mesh;
-    if (!wall2) {
-      console.warn("wall2 not found in map_v3.glb");
-    }
+    const updateProgress = () => {
+      const currentLoaded = loadedSizes.track + loadedSizes.terrain + loadedSizes.start_line;
+      const pct = Math.min(50, Math.floor((currentLoaded / totalBytes) * 50));
+      progressFill.style.width = `${10 + pct}%`;
+    };
 
-    scene.add(mapGltf.scene);
+    const [trackGltf, terrainGltf, startLineGltf] = await Promise.all([
+      new Promise<any>((resolve, reject) => {
+        loader.load('models/track.glb', resolve, (xhr) => {
+          loadedSizes.track = xhr.loaded;
+          updateProgress();
+        }, reject);
+      }),
+      new Promise<any>((resolve, reject) => {
+        loader.load('models/terrain.glb', resolve, (xhr) => {
+          loadedSizes.terrain = xhr.loaded;
+          updateProgress();
+        }, reject);
+      }),
+      new Promise<any>((resolve, reject) => {
+        loader.load('models/start_line.glb', resolve, (xhr) => {
+          loadedSizes.start_line = xhr.loaded;
+          updateProgress();
+        }, reject);
+      })
+    ]);
+
+    scene.add(trackGltf.scene);
+    scene.add(terrainGltf.scene);
+    scene.add(startLineGltf.scene);
+
+    const wallMeshes: THREE.Mesh[] = [];
 
     // Aktifkan shadow, atur roughness, pastikan DoubleSide, dan matikan frustum culling agar terrender dari semua sudut
-    mapGltf.scene.traverse((child: any) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        child.frustumCulled = false; // Matikan culling agar tidak menghilang saat kamera berada di sudut tertentu
-        if (child.material) {
-          const mats = Array.isArray(child.material) ? child.material : [child.material];
-          mats.forEach((mat: any) => {
-            mat.roughness = 0.8;
-            mat.side = THREE.DoubleSide;
-          });
+    [trackGltf, terrainGltf, startLineGltf].forEach((gltf) => {
+      gltf.scene.traverse((child: any) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.frustumCulled = false; // Matikan culling agar tidak menghilang saat kamera berada di sudut tertentu
+          if (child.material) {
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+            mats.forEach((mat: any) => {
+              mat.roughness = 0.8;
+              mat.side = THREE.DoubleSide;
+            });
+          }
+          // Cari mesh dinding (wall) di track.glb
+          if (gltf === trackGltf && child.name.toLowerCase().includes('wall')) {
+            wallMeshes.push(child);
+          }
         }
-      }
+      });
     });
 
     // 2. Bangun Trek dan Scenery secara Prosedural (koin, rintangan, dsb)
@@ -485,9 +523,9 @@ async function loadAssets() {
     // 4. Setup Fisika (Crashcat)
     physicsSystem = initPhysics();
     buildTrackColliders(physicsSystem, trackData.centerLineCurve);
-    if (wall2) {
-      buildModelColliders(physicsSystem, wall2);
-    }
+    wallMeshes.forEach(wallMesh => {
+      buildModelColliders(physicsSystem, wallMesh);
+    });
 
     // Pasang rigid body dynamic ke kart di garis start
     const spawnPos = new THREE.Vector3(-0.03, 1.2, -45.67);
@@ -557,8 +595,9 @@ function finishRace() {
   const resultsScreen = document.getElementById('results-screen') as HTMLDivElement;
   resultsScreen.style.display = 'block';
 
-  // Matikan suara mesin
+  // Matikan suara mesin & rem
   if (engineSound.isPlaying) engineSound.stop();
+  if (skidSound && skidSound.isPlaying) skidSound.stop();
 
   // Hitung total waktu lap
   const totalScore = (coinsCollected * 100) + Math.max(0, Math.floor(10000 - lapTimer * 10));
@@ -654,6 +693,26 @@ function animate() {
     if (engineSound.isPlaying) {
       const speedPct = Math.abs(vehicle.linearSpeed) / 2.5;
       engineSound.setPlaybackRate(0.8 + speedPct * 1.2);
+    }
+
+    // Sinkronisasi suara rem/drift (skid)
+    if (skidSound && skidSound.buffer) {
+      const isSkidding = (vehicle.driftIntensity > 0.42 && Math.abs(vehicle.linearSpeed) > 0.2) ||
+                         (inputState.z < 0 && vehicle.linearSpeed > 0.2);
+
+      if (isSkidding) {
+        if (!skidSound.isPlaying) {
+          skidSound.play();
+        }
+        // Sesuaikan volume & pitch berdasarkan intensitas drift
+        const targetVol = THREE.MathUtils.clamp(vehicle.driftIntensity * 0.45, 0.15, 0.65);
+        skidSound.setVolume(targetVol);
+        skidSound.setPlaybackRate(0.85 + Math.min(1.0, vehicle.driftIntensity) * 0.3);
+      } else {
+        if (skidSound.isPlaying) {
+          skidSound.stop();
+        }
+      }
     }
 
     // Perbarui kamera pengikut

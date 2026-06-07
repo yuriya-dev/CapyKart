@@ -6,11 +6,11 @@ const VERTS_PER_SEGMENT = 6;
 const FLOATS_PER_SEGMENT = VERTS_PER_SEGMENT * 3;
 const COLOR_FLOATS_PER_SEGMENT = VERTS_PER_SEGMENT * 4;
 
-const WIDTH = 0.12; // Adjusted width for visual presence
+const WIDTH = 0.22; // Adjusted width for visual presence
 const Y_OFFSET = 0.02; // Small offset above ground to avoid z-fighting
 const MIN_SEGMENT_LENGTH = 0.02;
-const INTENSITY_MIN = 0.3;
-const INTENSITY_MAX = 2.0;
+const INTENSITY_MIN = 0.2;
+const INTENSITY_MAX = 1.5;
 const INV_INTENSITY_RANGE = 1 / (INTENSITY_MAX - INTENSITY_MIN);
 
 const _wheelWorld = new THREE.Vector3();
@@ -149,7 +149,7 @@ export class DriftMarks {
     const material = new THREE.MeshBasicMaterial({
       color: 0x111111,
       transparent: true,
-      opacity: 0.65, // Opacity is multiplied with vertex alpha
+      opacity: 0.85, // Opacity is multiplied with vertex alpha
       vertexColors: true,
       depthWrite: false,
       side: THREE.DoubleSide,
@@ -169,7 +169,7 @@ export class DriftMarks {
     vehicle.container.updateMatrixWorld(true);
 
     // Drifting is active if driftIntensity is high enough and kart is moving fast enough
-    const emit = vehicle.driftIntensity > 0.22 && Math.abs(vehicle.linearSpeed) > 0.15;
+    const emit = vehicle.driftIntensity > 0.42 && Math.abs(vehicle.linearSpeed) > 0.2;
 
     if (!emit && !this.trails[0].active && !this.trails[1].active) return;
 
