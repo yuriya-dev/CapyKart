@@ -55,9 +55,41 @@ let boosterCharge = 0;
 const MAX_BOOSTER_CHARGE = 3;
 let score = 0;
 
+// Fungsi beeper untuk countdown
+function playCountdownBeep(isGo: boolean) {
+  const ctx = (THREE.AudioContext.getContext() as AudioContext);
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  if (isGo) {
+    // Green light beep: tuuuut (tinggi, durasi 0.5s)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1046.50, ctx.currentTime); // C6
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.55);
+  } else {
+    // Red light beep: tut (sedang, durasi 0.12s)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+    gain.gain.setValueAtTime(0.14, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
+  }
+}
+
 // Sistem Audio
 let audioListener: THREE.AudioListener;
 let engineSound: THREE.Audio;
+let lastCountdownBeepSec = -1;
 let coinSound: THREE.Audio;
 let boostSound: THREE.Audio;
 let skidSound: THREE.Audio;
@@ -617,6 +649,7 @@ function startRace() {
 
   currentState = 'COUNTDOWN';
   countdownTimer = 10.0;
+  lastCountdownBeepSec = 6; // Setel ke 6 agar pemicu beep bisa jalan di detik 5, 4, 3, 2, 1, 0
   cameraSystem.startIntro(5.0); // Memulai intro putaran kamera 5 detik selama countdown
 
   const cdScreen = document.getElementById('countdown-screen') as HTMLDivElement;
@@ -759,6 +792,20 @@ function animate() {
   if (currentState === 'COUNTDOWN') {
     countdownTimer -= dt;
     updateCountdownUI(countdownTimer);
+
+    // Bunyikan beep countdown sesuai transisi lampu
+    const currentSec = Math.ceil(countdownTimer);
+    if (countdownTimer > 0) {
+      if (currentSec <= 5 && currentSec !== lastCountdownBeepSec) {
+        lastCountdownBeepSec = currentSec;
+        playCountdownBeep(false); // tut
+      }
+    } else {
+      if (lastCountdownBeepSec !== 0) {
+        lastCountdownBeepSec = 0;
+        playCountdownBeep(true); // tuuuut
+      }
+    }
 
     // Karts tidak bergerak, beri input kosong
     const emptyInput = { x: 0, z: 0, touchActive: false };
@@ -916,7 +963,8 @@ function animate() {
     // Tombol R reset keyboard
     if ((controls as any).keys) {
       if ((controls as any).keys['KeyR']) {
-        vehicle.resetPosition();
+        startRace();
+        (controls as any).keys['KeyR'] = false; // Mencegah trigger berulang kali
       }
       // Tombol Space booster keyboard
       if ((controls as any).keys['Space']) {
@@ -953,7 +1001,7 @@ document.getElementById('hud-booster-container')?.addEventListener('click', () =
 });
 
 document.getElementById('btn-reset')?.addEventListener('click', () => {
-  vehicle.resetPosition();
+  startRace();
 });
 
 // Jalankan Persiapan Game

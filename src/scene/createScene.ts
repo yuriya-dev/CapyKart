@@ -6,7 +6,6 @@
  */
 
 import * as THREE from 'three';
-import { COLORS } from './track/pieces.ts';
 
 export interface Scenery {
   dirLight: THREE.DirectionalLight;
@@ -271,36 +270,13 @@ export function setupScenery(scene: THREE.Scene, centerLineCurve: THREE.CatmullR
     coins.push(coinGroup);
   }
   
-  // 8. Tempatkan Rintangan (MemeBarricade x2 di sepanjang sirkuit secara dinamis)
-  const obstacles: THREE.Mesh[] = [];
-  const obstacleTValues = [0.35, 0.75]; // Letakkan di 35% dan 75% lintasan
-  
-  const obsGeo = new THREE.BoxGeometry(1.6, 0.8, 1.0); // Dikecilkan sedikit agar muat di jalan sempit 4.4
-  const obsMat = new THREE.MeshLambertMaterial({ color: COLORS.orange });
-  
-  obstacleTValues.forEach((t, idx) => {
-    const pos = centerLineCurve.getPointAt(t);
-    pos.y = 0.4; // offset di atas jalan
-    
-    // Hitung orientasi rotasi mengikuti tangent jalan
-    const tangent = centerLineCurve.getTangentAt(t);
-    const rotY = Math.atan2(tangent.x, tangent.z);
-    
-    const obs = new THREE.Mesh(obsGeo, obsMat);
-    obs.position.copy(pos);
-    obs.rotation.y = rotY;
-    obs.castShadow = true;
-    obs.receiveShadow = true;
-    obs.name = `obstacle_${idx}`;
-    scene.add(obs);
-    obstacles.push(obs);
-  });
+  // 8. Rintangan dinonaktifkan (dihapus kotak obstakel sesuai permintaan)
   
   return {
     dirLight,
     towers,
     billboards,
     coins,
-    obstacles
+    obstacles: []
   };
 }
