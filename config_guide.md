@@ -137,3 +137,17 @@ Untuk mempermudah penyelarasan waypoint dengan lintasan visual di layar browser,
         ```
     *   **Penjelasan:** Secara bawaan, kode ini memunculkan bulatan merah (`THREE.Points`) pada setiap koordinat waypoint di layar.
         *   **Untuk mematikan/menyembunyikan titik merah di produksi (release):** Silakan beri komentar (`//`) atau hapus baris `scene.add(pointsObj);` di file `main.ts`.
+
+Kalau bot masih menabrak wall di tikungan paling tajam setelah ini, ada dua parameter utama yang bisa kamu tuning langsung di 
+
+main.ts baris 472-487
+:
+
+typescript
+// Kurangi angka ini agar bot mulai melambat LEBIH AWAL sebelum tikungan
+const turnLoad = Math.max(curvatureAngle * 1.2, Math.abs(angle));
+if (turnLoad > 1.2) {
+  gas = 0.2;   // ← Tikungan sangat tajam, turunkan jika masih terlalu cepat (misal: 0.15)
+} else if (turnLoad > 0.7) {
+  gas = 0.35;  // ← Tikungan tajam
+} ...

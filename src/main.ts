@@ -437,8 +437,23 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
 
   bot.closestWaypointIdx = closestIdx;
 
-  // Targetkan titik lookahead di depan (misalnya 10 waypoint ke depan untuk mengikuti jalur lebih presisi)
-  const lookAheadCount = 10;
+  // --- Hitung curvature (kelengkungan) jalur di depan bot ---
+  // Bandingkan arah vektor segmen [closest → +5] vs [+5 → +12]
+  // Semakin besar sudutnya, semakin tajam tikungannya
+  const cA = waypoints[closestIdx];
+  const cB = waypoints[(closestIdx + 5) % waypoints.length];
+  const cC = waypoints[(closestIdx + 12) % waypoints.length];
+  const seg1 = cB.clone().sub(cA).normalize();
+  const seg2 = cC.clone().sub(cB).normalize();
+  const curvatureDot = THREE.MathUtils.clamp(seg1.dot(seg2), -1, 1);
+  // curvatureAngle: 0 = lurus, PI = balik arah, ~0.4-0.8 = tikungan tajam
+  const curvatureAngle = Math.acos(curvatureDot);
+
+  // --- Dynamic lookahead: dekatkan target di tikungan tajam agar bot belok lebih awal ---
+  // Trek lurus → lookahead 10, tikungan tajam → lookahead 4
+  const curveFactor = THREE.MathUtils.clamp(curvatureAngle / 0.7, 0, 1);
+  const lookAheadCount = Math.round(THREE.MathUtils.lerp(10, 4, curveFactor));
+
   const targetIdx = (closestIdx + lookAheadCount) % waypoints.length;
   const targetWp = waypoints[targetIdx];
 
@@ -448,18 +463,29 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
   targetLocal.applyQuaternion(invQuat);
 
   // Hitung sudut deviasi target terhadap arah hadap bot
-  // Local forward adalah (0, 0, 1), jadi sudut dihitung dengan Math.atan2(x, z)
   const angle = Math.atan2(targetLocal.x, targetLocal.z);
 
-  // Kemudi (steer): sesuaikan sensitivitas kemudi agar lebih responsif mengikuti tikungan
-  // Gunakan nilai negatif (-angle) karena orientasi koordinat lokal setir terbalik
-  let steer = -angle * 1.8;
+  // Kemudi: skala gain setir sedikit lebih besar di tikungan agar bot belok lebih mulus
+  const steerGain = THREE.MathUtils.lerp(1.8, 2.4, curveFactor);
+  let steer = -angle * steerGain;
   steer = THREE.MathUtils.clamp(steer, -1.0, 1.0);
 
-  // Gas (z): kurangi kecepatan jika sudut belokan tajam agar tidak understeer/oversteer keluar trek
-  let gas = 0.85;
-  if (Math.abs(steer) > 0.6) {
-    gas = 0.45;
+  // Gas: kombinasikan curvature trek + sudut setir saat ini untuk deselerasi proaktif.
+  // Gas SELALU >= 0.2 (tidak pernah berhenti penuh) agar bot tidak mogok di tikungan.
+  const turnLoad = Math.max(curvatureAngle * 1.2, Math.abs(angle));
+  let gas: number;
+  if (turnLoad > 1.2) {
+    // Tikungan sangat tajam: melambat signifikan tapi tetap bergerak
+    gas = 0.5;
+  } else if (turnLoad > 0.7) {
+    // Tikungan tajam
+    gas = 0.7;
+  } else if (turnLoad > 0.4) {
+    // Tikungan sedang
+    gas = 0.85;
+  } else {
+    // Trek lurus: kecepatan penuh
+    gas = 1.0;
   }
 
   return {
