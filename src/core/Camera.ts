@@ -122,7 +122,7 @@ export class FollowCamera {
     // Jalankan auto-orbit intro jika aktif
     if (this.introActive) {
       this.introTime += dt;
-      if (this.introTime >= this.introDuration) {a
+      if (this.introTime >= this.introDuration) {
         this.introActive = false;
         this.orbitYaw = 0;
         this.orbitPitch = 0;
