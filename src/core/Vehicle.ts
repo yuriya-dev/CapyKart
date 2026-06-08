@@ -73,7 +73,7 @@ export class Vehicle {
   public init(gltf: any): THREE.Group {
     // Clone using SkeletonUtils to preserve bone bindings for animations
     const vehicleModel = SkeletonUtils.clone(gltf.scene);
-    
+
     // Scale model Capybara agar ukurannya pas di trek (lebar jalan ~4.4)
     // Scale 0.9 is perfect for 1.1 width kart on 4.4 width road
     vehicleModel.scale.setScalar(0.9);
@@ -82,7 +82,7 @@ export class Vehicle {
     // Siapkan Animation Mixer jika model memiliki animasi
     if (gltf.animations && gltf.animations.length > 0) {
       this.mixer = new THREE.AnimationMixer(vehicleModel);
-      
+
       // Pilih animasi default "anim_0" yang merupakan loop idle/drive stabil
       const animClip = gltf.animations.find((a: any) => a.name === 'anim_0') || gltf.animations[0];
       this.driveAction = this.mixer.clipAction(animClip);
@@ -171,11 +171,11 @@ export class Vehicle {
    */
   public setCustomTextures(suitUrl: string, kartUrl: string) {
     const loader = new THREE.TextureLoader();
-    
+
     const suitTexture = loader.load(suitUrl);
     suitTexture.colorSpace = THREE.SRGBColorSpace;
     suitTexture.flipY = false;
-    
+
     const kartTexture = loader.load(kartUrl);
     kartTexture.colorSpace = THREE.SRGBColorSpace;
     kartTexture.flipY = false;
@@ -183,7 +183,7 @@ export class Vehicle {
     const tireTexture = loader.load('/tire.png');
     tireTexture.colorSpace = THREE.SRGBColorSpace;
     tireTexture.flipY = false;
-    
+
     this.container.traverse((child: any) => {
       if (child.isMesh && child.material) {
         // Check if this mesh belongs to a wheel or tire
@@ -258,7 +258,7 @@ export class Vehicle {
 
       const steeringGrip = THREE.MathUtils.clamp(Math.abs(this.linearSpeed), 0.3, 1.2);
       const targetAngular = -inputX * steeringGrip * 2.8 * direction;
-      
+
       this.angularSpeed = THREE.MathUtils.lerp(this.angularSpeed, targetAngular, dt * 4.5);
       this.container.rotateY(this.angularSpeed * dt);
 

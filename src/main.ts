@@ -49,11 +49,16 @@ const TOTAL_LAPS = 3;
 let lapTimer = 0;
 let totalRaceTime = 0; // Waktu total balapan
 let startLinePos = new THREE.Vector3(); // Posisi fisik garis start/finish dari start_line.glb
+const FINISH_LINE_RADIUS = 6.0; // Radius zona finish line dalam meter (3D)
 let bestLapTime = Infinity;
 let coinsCollected = 0;
 let boosterCharge = 0;
 const MAX_BOOSTER_CHARGE = 3;
 let score = 0;
+
+// Flag midpoint untuk mencegah trigger lap terlalu dini (sebelum melewati setengah sirkuit)
+let playerHasPassedMidpoint = false;
+const botHasPassedMidpoint: boolean[] = [];
 
 // Fungsi beeper untuk countdown
 function playCountdownBeep(isGo: boolean) {
@@ -301,10 +306,10 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
   let gas: number;
   if (turnLoad > 1.2) {
     // Tikungan sangat tajam: melambat signifikan tapi tetap bergerak
-    gas = 0.6;
+    gas = 0.7;
   } else if (turnLoad > 0.7) {
     // Tikungan tajam
-    gas = 0.85;
+    gas = 0.9;
   } else if (turnLoad > 0.4) {
     // Tikungan sedang
     gas = 0.95;
@@ -534,6 +539,12 @@ async function loadAssets() {
       });
     });
 
+    // Debug: print semua nama node di startLineGltf untuk konfirmasi nama mesh
+    console.log('=== START LINE GLB NODES ===');
+    startLineGltf.scene.traverse((child: any) => {
+      if (child.name) console.log(' -', child.name, '| type:', child.type);
+    });
+
     // Tentukan posisi start dari startLineGltf
     const getStartPos = (meshName: string, fallback: THREE.Vector3): THREE.Vector3 => {
       const obj = startLineGltf.scene.getObjectByName(meshName);
@@ -553,13 +564,24 @@ async function loadAssets() {
       start_4: getStartPos('start_4', new THREE.Vector3(2.0, 1.2, -45.0))
     };
 
-    // Simpan posisi garis start/finish sebagai rata-rata ke-4 slot start
-    startLinePos.set(
-      (spawnPositions.start_1.x + spawnPositions.start_2.x + spawnPositions.start_3.x + spawnPositions.start_4.x) / 4,
-      (spawnPositions.start_1.y + spawnPositions.start_2.y + spawnPositions.start_3.y + spawnPositions.start_4.y) / 4,
-      (spawnPositions.start_1.z + spawnPositions.start_2.z + spawnPositions.start_3.z + spawnPositions.start_4.z) / 4
-    );
-    console.log('START LINE POS:', startLinePos);
+    // Ambil posisi garis finish dari mesh start_finish_line di GLB
+    const finishLineObj = startLineGltf.scene.getObjectByName('start_finish_line');
+    if (finishLineObj) {
+      finishLineObj.getWorldPosition(startLinePos);
+      // Geser zona deteksi 8 unit ke depan (+X, arah hadap kart dari start)
+      // agar trigger tepat di atas garis kotak catur, bukan sebelumnya
+      startLinePos.x += 6.0;
+      console.log('START FINISH LINE POS (dari mesh, +offset):', startLinePos);
+    } else {
+      // Fallback: rata-rata 4 slot start jika mesh tidak ditemukan
+      startLinePos.set(
+        (spawnPositions.start_1.x + spawnPositions.start_2.x + spawnPositions.start_3.x + spawnPositions.start_4.x) / 4,
+        (spawnPositions.start_1.y + spawnPositions.start_2.y + spawnPositions.start_3.y + spawnPositions.start_4.y) / 4,
+        (spawnPositions.start_1.z + spawnPositions.start_2.z + spawnPositions.start_3.z + spawnPositions.start_4.z) / 4
+      );
+      console.warn('start_finish_line mesh tidak ditemukan di GLB, fallback ke rata-rata spawn.');
+      console.log('START LINE POS (fallback):', startLinePos);
+    }
 
     // Hitung pergeseran sirkuit (shift) secara dinamis agar pas dengan jalan baru
     const new_x_center = (spawnPositions.start_1.x + spawnPositions.start_3.x) / 2;
@@ -682,23 +704,28 @@ function getRacerProgress(racer: Vehicle, waypoints: THREE.Vector3[]): number {
   const wpLength = waypoints.length;
   const idx = racer.closestWaypointIdx;
   const nextIdx = (idx + 1) % wpLength;
-  
+
   const currentWp = waypoints[idx];
   const nextWp = waypoints[nextIdx];
   const pos = racer.spherePos;
-  
+
   const segment = new THREE.Vector3().subVectors(nextWp, currentWp);
   const segmentLength = segment.length();
+
+  // Gunakan (currentLap - 1) agar lap 1 dimulai dari progress 0
+  // sehingga ranking tidak terbalik di dekat garis finish
+  const lapOffset = (racer.currentLap - 1) * wpLength;
+
   if (segmentLength < 0.001) {
-    return racer.currentLap * wpLength + idx;
+    return lapOffset + idx;
   }
-  
+
   const toRacer = new THREE.Vector3().subVectors(pos, currentWp);
   const segmentDir = segment.clone().normalize();
   const projection = toRacer.dot(segmentDir) / segmentLength;
   const clampedProj = THREE.MathUtils.clamp(projection, 0, 1);
-  
-  return racer.currentLap * wpLength + idx + clampedProj;
+
+  return lapOffset + idx + clampedProj;
 }
 
 function compareRacers(a: Vehicle, b: Vehicle, waypoints: THREE.Vector3[]): number {
@@ -754,14 +781,16 @@ function startRace() {
   vehicle.currentLap = 1;
   vehicle.isFinished = false;
   vehicle.finishTime = 0;
+  playerHasPassedMidpoint = false; // Reset flag midpoint player
 
-  bots.forEach(bot => {
+  bots.forEach((bot, i) => {
     const initBotIdx = findClosestWaypointIdxGlobal(bot.spherePos, waypoints);
     bot.closestWaypointIdx = initBotIdx;
     bot.prevWaypointIdx = initBotIdx;
     bot.currentLap = 1;
     bot.isFinished = false;
     bot.finishTime = 0;
+    botHasPassedMidpoint[i] = false; // Reset flag midpoint bot
   });
 
   sceneryData.coins.forEach(c => {
@@ -965,73 +994,79 @@ function animate() {
     const waypoints = trackData.waypoints;
     const totalWps = waypoints.length;
 
-    // Update closestWaypointIdx player dan lap wrap-around
+    // Update closestWaypointIdx player
     {
       const prevIdx = vehicle.closestWaypointIdx;
-      const botPos = vehicle.spherePos;
+      const playerPos = vehicle.spherePos;
       let minD2 = Infinity;
       let closestIdx = prevIdx;
       for (let offset = -5; offset <= 15; offset++) {
         const idx = (prevIdx + offset + waypoints.length) % waypoints.length;
-        const d2 = botPos.distanceToSquared(waypoints[idx]);
+        const d2 = playerPos.distanceToSquared(waypoints[idx]);
         if (d2 < minD2) { minD2 = d2; closestIdx = idx; }
       }
       vehicle.closestWaypointIdx = closestIdx;
+      vehicle.prevWaypointIdx = closestIdx;
 
-      // Cek Lap wrap-around
-      if (prevIdx !== closestIdx) {
-        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25) {
-          if (!vehicle.isFinished) {
-            if (lapTimer < bestLapTime) {
-              bestLapTime = lapTimer;
-            }
-            vehicle.currentLap++;
-            currentLap = vehicle.currentLap;
-            lapTimer = 0;
+      // Tandai sudah melewati titik tengah sirkuit (waypoint 40-60%)
+      if (!playerHasPassedMidpoint &&
+          closestIdx >= totalWps * 0.4 && closestIdx <= totalWps * 0.6) {
+        playerHasPassedMidpoint = true;
+      }
 
-            // Munculkan lagi koin bubble Solana di lintasan saat lap baru
-            sceneryData.coins.forEach(c => {
-              c.visible = true;
-            });
+      // Deteksi garis finish berdasarkan jarak fisik ke startLinePos
+      if (!vehicle.isFinished && playerHasPassedMidpoint) {
+        const distToFinish = playerPos.distanceTo(startLinePos);
+        if (distToFinish <= FINISH_LINE_RADIUS) {
+          // Pemain menyentuh zona garis finish setelah melewati setengah sirkuit
+          playerHasPassedMidpoint = false; // Reset untuk putaran berikutnya
 
-            if (currentLap > TOTAL_LAPS) {
-              vehicle.isFinished = true;
-              vehicle.finishTime = totalRaceTime;
-              finishRace();
-            } else {
-              (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
-            }
+          if (lapTimer < bestLapTime) {
+            bestLapTime = lapTimer;
           }
-        } else if (prevIdx < totalWps * 0.25 && closestIdx > totalWps * 0.75) {
-          if (!vehicle.isFinished && vehicle.currentLap > 1) {
-            vehicle.currentLap--;
-            currentLap = vehicle.currentLap;
+          vehicle.currentLap++;
+          currentLap = vehicle.currentLap;
+          lapTimer = 0;
+
+          // Munculkan lagi koin bubble Solana di lintasan saat lap baru
+          sceneryData.coins.forEach(c => {
+            c.visible = true;
+          });
+
+          if (currentLap > TOTAL_LAPS) {
+            vehicle.isFinished = true;
+            vehicle.finishTime = totalRaceTime;
+            finishRace();
+          } else {
             (document.getElementById('hud-lap') as HTMLDivElement).textContent = `LAP: ${currentLap} / ${TOTAL_LAPS}`;
           }
         }
-        vehicle.prevWaypointIdx = closestIdx;
       }
     }
 
-    // Perbarui logika pergerakan kart bot dan lap wrap-around
-    bots.forEach((bot) => {
+    // Perbarui logika pergerakan kart bot dan lap wrap-around (tetap waypoint-based)
+    bots.forEach((bot, botIdx) => {
       const prevIdx = bot.closestWaypointIdx;
       const botInput = calculateBotInput(bot, waypoints);
       bot.update(dt, botInput);
 
       const closestIdx = bot.closestWaypointIdx;
+
+      // Tandai midpoint bot
+      if (!botHasPassedMidpoint[botIdx] &&
+          closestIdx >= totalWps * 0.4 && closestIdx <= totalWps * 0.6) {
+        botHasPassedMidpoint[botIdx] = true;
+      }
+
       if (prevIdx !== closestIdx) {
-        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25) {
+        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25 && botHasPassedMidpoint[botIdx]) {
+          botHasPassedMidpoint[botIdx] = false;
           if (!bot.isFinished) {
             bot.currentLap++;
             if (bot.currentLap > TOTAL_LAPS) {
               bot.isFinished = true;
               bot.finishTime = totalRaceTime;
             }
-          }
-        } else if (prevIdx < totalWps * 0.25 && closestIdx > totalWps * 0.75) {
-          if (!bot.isFinished && bot.currentLap > 1) {
-            bot.currentLap--;
           }
         }
         bot.prevWaypointIdx = closestIdx;
