@@ -469,10 +469,20 @@ function initRenderer() {
   );
   composer.addPass(bloomPass);
 
-  window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
-  });
+  const handleResize = () => {
+    setTimeout(() => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      composer.setSize(width, height);
+      if (cameraSystem && cameraSystem.camera) {
+        cameraSystem.camera.aspect = width / height;
+        cameraSystem.camera.updateProjectionMatrix();
+      }
+    }, 100);
+  };
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', handleResize);
 }
 
 /**
@@ -613,18 +623,18 @@ async function loadAssets() {
   progressFill.style.width = '10%';
 
   try {
-    // 1. Muat Model Map GLB secara Paralel (3 Berkas)
-    const loadedSizes = { track: 0, terrain: 0, start_line: 0 };
-    const totalSizes = { track: 25680520, terrain: 4942704, start_line: 294620 };
-    const totalBytes = totalSizes.track + totalSizes.terrain + totalSizes.start_line;
+    // 1. Muat Model Map GLB secara Paralel (4 Berkas)
+    const loadedSizes = { track: 0, terrain: 0, start_line: 0, gate: 0 };
+    const totalSizes = { track: 25680520, terrain: 4942704, start_line: 294620, gate: 121660 };
+    const totalBytes = totalSizes.track + totalSizes.terrain + totalSizes.start_line + totalSizes.gate;
 
     const updateProgress = () => {
-      const currentLoaded = loadedSizes.track + loadedSizes.terrain + loadedSizes.start_line;
+      const currentLoaded = loadedSizes.track + loadedSizes.terrain + loadedSizes.start_line + loadedSizes.gate;
       const pct = Math.min(50, Math.floor((currentLoaded / totalBytes) * 50));
       progressFill.style.width = `${10 + pct}%`;
     };
 
-    const [trackGltf, terrainGltf, startLineGltf] = await Promise.all([
+    const [trackGltf, terrainGltf, startLineGltf, gateGltf] = await Promise.all([
       new Promise<any>((resolve, reject) => {
         loader.load('models/track.glb', resolve, (xhr) => {
           loadedSizes.track = xhr.loaded;
@@ -642,17 +652,24 @@ async function loadAssets() {
           loadedSizes.start_line = xhr.loaded;
           updateProgress();
         }, reject);
+      }),
+      new Promise<any>((resolve, reject) => {
+        loader.load('models/gate.glb', resolve, (xhr) => {
+          loadedSizes.gate = xhr.loaded;
+          updateProgress();
+        }, reject);
       })
     ]);
 
     scene.add(trackGltf.scene);
     scene.add(terrainGltf.scene);
     scene.add(startLineGltf.scene);
+    scene.add(gateGltf.scene);
 
     const wallMeshes: THREE.Mesh[] = [];
 
     // Aktifkan shadow, atur roughness, pastikan DoubleSide, dan matikan frustum culling agar terrender dari semua sudut
-    [trackGltf, terrainGltf, startLineGltf].forEach((gltf) => {
+    [trackGltf, terrainGltf, startLineGltf, gateGltf].forEach((gltf) => {
       gltf.scene.traverse((child: any) => {
         if (child.isMesh) {
           child.castShadow = true;

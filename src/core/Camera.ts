@@ -35,10 +35,14 @@ export class FollowCamera {
     this.camera.position.set(0, 10, 15);
     this.camera.lookAt(0, 0, 0);
 
-    window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
-    });
+    const handleResize = () => {
+      setTimeout(() => {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+      }, 100);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 
     // Event listener untuk memutar kamera menggunakan drag/pointer
     let isDragging = false;
