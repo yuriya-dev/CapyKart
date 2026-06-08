@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="x-ogp-key" content="5d697390-281a-400d-9642-e191a280567c" id="ogp-key-meta" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -15,9 +17,12 @@
   <meta name="social:discord" content="yuriya25">
   <meta name="social:telegram" content="wcah56">
   <meta property="og:creator" content="camerlosex">
-  <title>Capy Kart Arena | $CAPYRACE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <title>Capy Kart Arena | CAPYJAM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet">
   <script src="https://sdk.play.fun"></script>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script id="tailwind-config">
@@ -108,7 +113,8 @@
     };
   </script>
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -118,6 +124,7 @@
       user-select: none;
       -webkit-user-select: none;
     }
+
     canvas {
       display: block;
       position: fixed;
@@ -127,45 +134,54 @@
       touch-action: none;
       z-index: 0;
     }
+
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
     }
+
     .glossy-overlay {
-      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%);
     }
+
     .btn-3d-press:active {
       transform: translateY(4px);
-      box-shadow: 0 0px 0 0 rgba(0,0,0,0.2) !important;
+      box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.2) !important;
     }
+
     .card-outline {
       border: 4px solid #1a1c1c;
     }
+
     .stadium-bg {
       background: linear-gradient(180deg, #1e88e5 0%, #bb171c 100%);
       position: relative;
       overflow: hidden;
     }
+
     .stadium-bg::before {
       content: '';
       position: absolute;
       inset: 0;
       background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15) 0%, transparent 20%),
-        radial-gradient(circle at 80% 10%, rgba(255,255,255,0.15) 0%, transparent 25%);
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 20%),
+        radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.15) 0%, transparent 25%);
       opacity: 0.6;
     }
+
     .nav-item-active {
       background-color: #47a1ff;
       color: #ffffff;
       border: 2px solid #1a1c1c;
-      box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2);
     }
+
     #landing-page {
       position: relative;
       z-index: 10;
       display: none;
     }
+
     #ui-container {
       position: fixed;
       inset: 0;
@@ -173,10 +189,12 @@
       z-index: 50;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
+
     .clickable {
       pointer-events: auto;
       cursor: pointer;
     }
+
     #loading-screen {
       position: fixed;
       inset: 0;
@@ -189,6 +207,7 @@
       z-index: 1000;
       transition: opacity 0.5s ease;
     }
+
     .progress-bar {
       width: 280px;
       height: 10px;
@@ -197,66 +216,118 @@
       overflow: hidden;
       border: 2px solid #1a1c1c;
     }
+
     .progress-fill {
       width: 0%;
       height: 100%;
       background: #ffe16e;
       transition: width 0.1s ease;
     }
-    #hud { display: none; }
-    #countdown-screen { display: none; }
-    #results-screen { display: none; }
+
+    #hud {
+      display: none;
+    }
+
+    #countdown-screen {
+      display: none;
+    }
+
+    #results-screen {
+      display: none;
+    }
+
     .light-circle {
       width: 36px;
       height: 36px;
       border-radius: 50%;
       background: #1a1a24;
       border: 2px solid #2d2d3a;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
       transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
     }
+
     .light-red {
       background: radial-gradient(circle, #ff3b30 0%, #a7140d 100%) !important;
       border-color: #ff6b62 !important;
-      box-shadow: 0 0 25px #ff3b30, inset 0 0 8px rgba(255,255,255,0.6) !important;
+      box-shadow: 0 0 25px #ff3b30, inset 0 0 8px rgba(255, 255, 255, 0.6) !important;
     }
+
     .light-green {
       background: radial-gradient(circle, #4cd964 0%, #147a24 100%) !important;
       border-color: #72f287 !important;
-      box-shadow: 0 0 30px #4cd964, inset 0 0 8px rgba(255,255,255,0.6) !important;
+      box-shadow: 0 0 30px #4cd964, inset 0 0 8px rgba(255, 255, 255, 0.6) !important;
     }
+
     @keyframes countdown-pulse {
-      0% { transform: scale(1.0); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1.0); }
+      0% {
+        transform: scale(1.0);
+      }
+
+      50% {
+        transform: scale(1.15);
+      }
+
+      100% {
+        transform: scale(1.0);
+      }
     }
+
     #countdown-text {
       animation: countdown-pulse 1s infinite;
     }
 
     /* ===== CHARACTER SELECT ===== */
     @keyframes cs-slide-in {
-      from { opacity: 0; transform: translateY(28px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0)   scale(1);    }
+      from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
+
     #character-select-screen {
-      animation: cs-slide-in 0.38s cubic-bezier(0.22,1,0.36,1) forwards;
+      animation: cs-slide-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       font-family: 'Plus Jakarta Sans', sans-serif;
       pointer-events: auto;
     }
+
     .cs-char-card {
       cursor: pointer;
-      transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
+      transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       user-select: none;
     }
-    .cs-char-card:hover  { transform: translateY(-6px) scale(1.02); }
-    .cs-char-card:active { transform: translateY(-2px) scale(0.98); }
-    .cs-stat-bar-fill { transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
-    #btn-char-back:hover  { color:#fff !important; background:rgba(255,255,255,0.12) !important; }
-    #btn-char-race:hover  { transform:scale(1.04); }
-    #btn-char-race:active { transform:translateY(4px); box-shadow:0 0px 0 0 rgba(0,0,0,0.5) !important; }
+
+    .cs-char-card:hover {
+      transform: translateY(-6px) scale(1.02);
+    }
+
+    .cs-char-card:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+
+    .cs-stat-bar-fill {
+      transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #btn-char-back:hover {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    #btn-char-race:hover {
+      transform: scale(1.04);
+    }
+
+    #btn-char-race:active {
+      transform: translateY(4px);
+      box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.5) !important;
+    }
 
     .cs-arrow-btn {
       display: flex;
@@ -273,11 +344,13 @@
       box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
       flex-shrink: 0;
     }
+
     .cs-arrow-btn:hover {
       background: rgba(255, 255, 255, 0.16);
       border-color: rgba(255, 255, 255, 0.35);
       box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1), 0 4px 0 rgba(0, 0, 0, 0.35);
     }
+
     .cs-arrow-btn:active {
       transform: translateY(4px);
       box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.2) !important;
@@ -286,13 +359,14 @@
     /* Shift and scale down HUD elements when mobile controls are visible */
     .mobile-active #hud-booster-wrapper {
       bottom: auto !important;
-      top: 12px !important;
+      top: calc(12px + var(--ogp-safe-top-inset, 0px)) !important;
       right: 156px !important;
       left: auto !important;
       transform: scale(0.75) !important;
       transform-origin: top right !important;
       transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
     }
+
     .mobile-active #hud-speed {
       bottom: 190px !important;
       right: 16px !important;
@@ -300,21 +374,24 @@
       transform-origin: bottom right !important;
       transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
     }
+
     .mobile-active #btn-reset {
       bottom: 16px !important;
       transform: translateX(-50%) scale(0.75) !important;
       transform-origin: bottom center !important;
       transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .mobile-active #hud > div:first-child {
-      top: 12px !important;
+
+    .mobile-active #hud>div:first-child {
+      top: calc(12px + var(--ogp-safe-top-inset, 0px)) !important;
       left: 12px !important;
       transform: scale(0.75) !important;
       transform-origin: top left !important;
       transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
     }
+
     .mobile-active #hud-time {
-      top: 12px !important;
+      top: calc(12px + var(--ogp-safe-top-inset, 0px)) !important;
       right: 12px !important;
       transform: scale(0.75) !important;
       transform-origin: top right !important;
@@ -327,34 +404,42 @@
         transform: translate(-50%, -50%) scale(0.8) !important;
         transform-origin: center center !important;
       }
-      #pause-screen > div {
+
+      #pause-screen>div {
         transform: scale(0.8) !important;
         transform-origin: center center !important;
       }
-      #settings-modal > div {
+
+      #settings-modal>div {
         transform: scale(0.8) !important;
         transform-origin: center center !important;
       }
+
       #character-select-screen {
         font-size: 0.9rem !important;
       }
-      #character-select-screen header {
-        padding: 8px 16px !important;
+
+      #cs-header {
+        padding: calc(8px + var(--ogp-safe-top-inset, 0px)) 16px 8px 16px !important;
       }
     }
 
     /* Landscape Mobile (Short screens) Layout Overrides */
     @media (max-height: 600px) {
+
       /* Landing Page Header */
       #landing-page header {
-        padding: 6px 16px !important;
+        padding: calc(6px + var(--ogp-safe-top-inset, 0px)) 16px 6px 16px !important;
       }
+
       #landing-page header img {
         height: 36px !important;
       }
+
       #landing-page header span {
         font-size: 15px !important;
       }
+
       #landing-page header button {
         padding: 6px 14px !important;
         font-size: 13px !important;
@@ -365,7 +450,8 @@
         padding-top: 12px !important;
         padding-bottom: 12px !important;
       }
-      #landing-page section > div {
+
+      #landing-page section>div {
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         padding-top: 12px !important;
@@ -374,32 +460,38 @@
         align-items: center !important;
         justify-content: space-around !important;
       }
+
       #landing-page section img {
         max-width: 200px !important;
         margin-top: 0 !important;
       }
+
       #landing-page section p {
         font-size: 13px !important;
         line-height: 1.1 !important;
       }
+
       #landing-page section .bg-primary-container {
         margin-bottom: 12px !important;
         padding: 4px 14px !important;
       }
+
       #btn-play {
         font-size: 22px !important;
         padding: 10px 24px !important;
         border-width: 3px !important;
-        box-shadow: 0 4px 0 0 rgba(0,0,0,0.5) !important;
+        box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.5) !important;
       }
+
       #landing-page section .material-symbols-outlined {
         display: none !important;
       }
 
       /* Character Select Screen Header */
       #cs-header {
-        padding: 8px 16px !important;
+        padding: calc(8px + var(--ogp-safe-top-inset, 0px)) 16px 8px 16px !important;
       }
+
       #cs-header button {
         padding: 6px 12px !important;
         font-size: 0.75rem !important;
@@ -424,18 +516,22 @@
         max-width: 250px !important;
         min-width: 180px !important;
       }
-      #cs-preview-container > div:first-child {
+
+      #cs-preview-container>div:first-child {
         width: 180px !important;
         max-height: 180px !important;
         border-radius: 20px !important;
       }
+
       #cs-glow-ring {
         height: 12px !important;
         filter: blur(8px) !important;
       }
+
       #cs-char-name {
         font-size: 1.1rem !important;
       }
+
       #cs-char-label {
         font-size: 0.6rem !important;
         margin-top: 2px !important;
@@ -446,26 +542,33 @@
         width: 38px !important;
         height: 38px !important;
       }
+
       .cs-arrow-btn span {
         font-size: 20px !important;
       }
+
       #cs-char-card-holder {
         max-width: 200px !important;
       }
+
       .cs-char-card {
         padding: 6px 10px !important;
         border-radius: 12px !important;
       }
-      .cs-char-card > div:first-child {
+
+      .cs-char-card>div:first-child {
         font-size: 1.8rem !important;
         margin-bottom: 2px !important;
       }
-      .cs-char-card > div:nth-child(3) {
+
+      .cs-char-card>div:nth-child(3) {
         margin-bottom: 2px !important;
       }
-      .cs-char-card > div:nth-child(4) {
+
+      .cs-char-card>div:nth-child(4) {
         margin-bottom: 4px !important;
       }
+
       .cs-char-card .cs-selected-badge {
         font-size: 0.52rem !important;
         padding: 2px 10px !important;
@@ -480,16 +583,26 @@
       z-index: 10;
       opacity: 0;
       background: radial-gradient(circle at center, transparent 35%, rgba(0, 224, 255, 0.08) 75%),
-                  repeating-conical-gradient(from 0deg, transparent 0deg, transparent 4deg, rgba(255, 255, 255, 0.45) 5deg, rgba(0, 224, 255, 0.35) 6deg, transparent 8deg);
+        repeating-conical-gradient(from 0deg, transparent 0deg, transparent 4deg, rgba(255, 255, 255, 0.45) 5deg, rgba(0, 224, 255, 0.35) 6deg, transparent 8deg);
       mask-image: radial-gradient(circle, transparent 25%, black 75%);
       -webkit-mask-image: radial-gradient(circle, transparent 25%, black 75%);
       transition: opacity 0.2s ease-out;
     }
+
     @keyframes wind-blur-spin {
-      0% { transform: scale(1.0); }
-      50% { transform: scale(1.06); }
-      100% { transform: scale(1.0); }
+      0% {
+        transform: scale(1.0);
+      }
+
+      50% {
+        transform: scale(1.06);
+      }
+
+      100% {
+        transform: scale(1.0);
+      }
     }
+
     #boost-wind-blur.active {
       opacity: 1 !important;
       animation: wind-blur-spin 0.08s infinite linear;
@@ -499,48 +612,75 @@
     #orientation-warning {
       display: none;
     }
+
     @media (max-width: 1024px) and (orientation: portrait) {
       body.game-started #orientation-warning {
         display: flex !important;
       }
     }
+
     @keyframes rotatePhone {
-      0% { transform: rotate(0deg); }
-      50% { transform: rotate(-90deg); }
-      100% { transform: rotate(-90deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      50% {
+        transform: rotate(-90deg);
+      }
+
+      100% {
+        transform: rotate(-90deg);
+      }
     }
   </style>
 </head>
+
 <body class="bg-black font-body-base text-on-surface selection:bg-secondary-container">
   <!-- Nitro Booster Wind Blur Overlay -->
   <div id="boost-wind-blur"></div>
 
   <!-- Screen Rotation Prompt Overlay -->
-  <div id="orientation-warning" style="position:fixed;inset:0;background:linear-gradient(135deg,#06060f 0%,#0d0620 100%);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:24px;box-sizing:border-box;">
+  <div id="orientation-warning"
+    style="position:fixed;inset:0;background:linear-gradient(135deg,#06060f 0%,#0d0620 100%);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:24px;box-sizing:border-box;">
     <!-- Rotating phone animation -->
-    <div class="rotate-phone-icon" style="width:64px;height:100px;border:4px solid #fff;border-radius:12px;position:relative;animation:rotatePhone 2s infinite ease-in-out;margin-bottom:28px;box-shadow:0 0 20px rgba(255,255,255,0.2);">
-      <div style="width:12px;height:4px;background:#fff;border-radius:2px;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);"></div>
-      <div style="width:8px;height:8px;background:#ffe016;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div class="rotate-phone-icon"
+      style="width:64px;height:100px;border:4px solid #fff;border-radius:12px;position:relative;animation:rotatePhone 2s infinite ease-in-out;margin-bottom:28px;box-shadow:0 0 20px rgba(255,255,255,0.2);">
+      <div
+        style="width:12px;height:4px;background:#fff;border-radius:2px;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);">
+      </div>
+      <div
+        style="width:8px;height:8px;background:#ffe016;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+      </div>
     </div>
-    <h3 style="font-family:'Rubik',sans-serif;font-weight:900;font-size:1.6rem;letter-spacing:0.08em;color:#ffe016;margin-bottom:12px;text-transform:uppercase;">ROTATE DEVICE</h3>
-    <p style="font-family:'Plus Jakarta Sans',sans-serif;font-size:0.95rem;color:rgba(255,255,255,0.7);max-width:280px;line-height:1.5;">Please rotate your screen to landscape mode to play!</p>
+    <h3
+      style="font-family:'Rubik',sans-serif;font-weight:900;font-size:1.6rem;letter-spacing:0.08em;color:#ffe016;margin-bottom:12px;text-transform:uppercase;">
+      ROTATE DEVICE</h3>
+    <p
+      style="font-family:'Plus Jakarta Sans',sans-serif;font-size:0.95rem;color:rgba(255,255,255,0.7);max-width:280px;line-height:1.5;">
+      Please rotate your screen to landscape mode to play!</p>
   </div>
 
   <div id="landing-page">
-    <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky" style="padding-top: var(--ogp-safe-top-inset, 0px);">
+    <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky"
+      style="padding-top: var(--ogp-safe-top-inset, 0px);">
       <div class="max-w-[1440px] mx-auto px-container-padding py-4 flex justify-between items-center">
-      <!-- Logo -->
+        <!-- Logo -->
         <div class="flex items-center gap-4">
-          <img src="https://lh3.googleusercontent.com/aida/AP1WRLtEqfPNMfG62jgcvEzjjrwwCXxJjuHH-Yu9O0qTYKm2zzZjTbq5ZBxMjV3XrwICWs6YDrr76_l4aI8ybr2l6RFOM3RI_wvXy0qOEt9RTBAjfwSZYS5885sod-QGVlAxZO2LIn-ZQPDWbPUweG836I9XFHdInJsDx1f9_GWTmAjqUwzeTO7o5DlfafdHatpcVF2pAucQDC1oIhWmI8R9gxHAD6n9Lps7BY57tqghza-OBKXaobiLcCfIHmrd" alt="Capy Kart Logo" class="h-12 md:h-16 object-contain ml-2">
-          <span class="font-headline-lg text-lg md:text-2xl uppercase tracking-wider select-none font-black flex items-center gap-1.5 ml-2">
+          <img
+            src="https://lh3.googleusercontent.com/aida/AP1WRLtEqfPNMfG62jgcvEzjjrwwCXxJjuHH-Yu9O0qTYKm2zzZjTbq5ZBxMjV3XrwICWs6YDrr76_l4aI8ybr2l6RFOM3RI_wvXy0qOEt9RTBAjfwSZYS5885sod-QGVlAxZO2LIn-ZQPDWbPUweG836I9XFHdInJsDx1f9_GWTmAjqUwzeTO7o5DlfafdHatpcVF2pAucQDC1oIhWmI8R9gxHAD6n9Lps7BY57tqghza-OBKXaobiLcCfIHmrd"
+            alt="Capy Kart Logo" class="h-12 md:h-16 object-contain ml-2">
+          <span
+            class="font-headline-lg text-lg md:text-2xl uppercase tracking-wider select-none font-black flex items-center gap-1.5 ml-2">
             <span class="text-primary">CAPY KART</span>
             <span class="text-secondary">ARENA</span>
           </span>
         </div>
-          <!-- Desktop Navigation -->
+        <!-- Desktop Navigation -->
 
         <div class="flex items-center gap-4">
-          <button class="clickable bg-secondary text-white px-6 py-2 rounded-full font-title-md btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center gap-2" onclick="document.getElementById('btn-play')?.click()"><span class="">Play</span></button>
+          <button
+            class="clickable bg-secondary text-white px-6 py-2 rounded-full font-title-md btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex items-center gap-2"
+            onclick="document.getElementById('btn-play')?.click()"><span class="">Play</span></button>
           <button id="btn-settings" class="clickable hover:rotate-45 transition-transform active:translate-y-1">
             <span class="material-symbols-outlined text-primary text-4xl">settings</span>
           </button>
@@ -551,19 +691,26 @@
 
     <main>
       <section class="relative overflow-hidden">
-        <div class="max-w-[1440px] mx-auto px-container-padding py-16 lg:py-24 flex flex-col lg:flex-row items-center justify-between relative z-10">
+        <div
+          class="max-w-[1440px] mx-auto px-container-padding py-16 lg:py-24 flex flex-col lg:flex-row items-center justify-between relative z-10">
           <div class="flex flex-col items-center lg:items-start text-center lg:text-left lg:w-1/2">
-            <div class="bg-primary-container text-on-primary-container px-8 py-3 rounded-full border-4 border-on-surface shadow-[0_6px_0_0_rgba(0,0,0,0.4)] mb-10 transform -rotate-2">
+            <div
+              class="bg-primary-container text-on-primary-container px-8 py-3 rounded-full border-4 border-on-surface shadow-[0_6px_0_0_rgba(0,0,0,0.4)] mb-10 transform -rotate-2">
               <p class="font-headline-lg text-headline-lg tracking-widest uppercase">Race. Drift. Win.</p>
             </div>
-            <button id="btn-play" type="button" class="clickable btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-display-hero text-display-hero px-10 lg:px-16 py-6 lg:py-8 rounded-full border-4 border-on-surface shadow-[0_10px_0_0_rgba(0,0,0,0.5)] relative overflow-hidden group">
+            <button id="btn-play" type="button"
+              class="clickable btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-display-hero text-display-hero px-10 lg:px-16 py-6 lg:py-8 rounded-full border-4 border-on-surface shadow-[0_10px_0_0_rgba(0,0,0,0.5)] relative overflow-hidden group">
               <div class="glossy-overlay absolute inset-0"></div>
               <span class="relative z-10">PLAY NOW</span>
             </button>
           </div>
           <div class="lg:w-1/2 flex justify-center mt-16 lg:mt-0 relative">
-            <div class="absolute inset-0 bg-secondary-container rounded-full opacity-20 blur-3xl scale-110 animate-pulse"></div>
-            <img alt="Capybara Mascot" class="w-full max-w-[600px] relative z-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500" src="/capy_kart_arena_logo.svg">
+            <div
+              class="absolute inset-0 bg-secondary-container rounded-full opacity-20 blur-3xl scale-110 animate-pulse">
+            </div>
+            <img alt="Capybara Mascot"
+              class="w-full max-w-[600px] relative z-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500"
+              src="/capy_kart_arena_logo.svg">
             <div class="absolute -top-10 -left-10 opacity-40 animate-pulse">
               <span class="material-symbols-outlined text-white text-8xl rotate-12">flag</span>
             </div>
@@ -579,14 +726,19 @@
   <div id="ui-container">
     <div id="loading-screen">
       <h1 class="font-display-hero text-display-hero text-white mb-8 uppercase tracking-wide">Capy Kart Arena</h1>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
       <div class="font-title-md mt-4 text-white/90" id="loading-status">Downloading track 3D assets...</div>
     </div>
 
     <!-- Modal Pengaturan Volume -->
-    <div id="settings-modal" class="fixed inset-0 flex justify-center items-center bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 pointer-events-auto">
-      <div class="bg-surface card-outline rounded-[32px] p-8 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] relative text-center">
-        <button id="btn-settings-close" class="clickable absolute top-4 right-4 text-on-surface-variant hover:scale-110 active:scale-95 transition-transform">
+    <div id="settings-modal"
+      class="fixed inset-0 flex justify-center items-center bg-black/60 z-[100] hidden opacity-0 transition-opacity duration-300 pointer-events-auto">
+      <div
+        class="bg-surface card-outline rounded-[32px] p-8 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] relative text-center">
+        <button id="btn-settings-close"
+          class="clickable absolute top-4 right-4 text-on-surface-variant hover:scale-110 active:scale-95 transition-transform">
           <span class="material-symbols-outlined text-3xl">close</span>
         </button>
         <h2 class="font-display-hero text-headline-lg text-primary mb-6 uppercase tracking-wide">SETTINGS</h2>
@@ -600,12 +752,16 @@
               </span>
               <span id="volume-pct-text">80%</span>
             </div>
-            <input type="range" id="volume-slider" min="0" max="100" value="80" class="clickable w-full h-3 bg-surface-container rounded-full appearance-none cursor-pointer border-2 border-on-surface accent-secondary [&::-webkit-slider-runnable-track]:bg-surface-container [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-secondary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-on-surface [&::-webkit-slider-thumb]:-mt-2.5">
+            <input type="range" id="volume-slider" min="0" max="100" value="80"
+              class="clickable w-full h-3 bg-surface-container rounded-full appearance-none cursor-pointer border-2 border-on-surface accent-secondary [&::-webkit-slider-runnable-track]:bg-surface-container [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-secondary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-on-surface [&::-webkit-slider-thumb]:-mt-2.5">
           </div>
         </div>
         <div class="flex flex-col gap-3 mt-8">
-          <button id="btn-settings-save" type="button" class="clickable w-full btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">SAVE</button>
-          <button id="btn-settings-home" type="button" class="clickable w-full btn-3d-press bg-primary-container text-on-primary-container font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-2" style="display: none;">
+          <button id="btn-settings-save" type="button"
+            class="clickable w-full btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">SAVE</button>
+          <button id="btn-settings-home" type="button"
+            class="clickable w-full btn-3d-press bg-primary-container text-on-primary-container font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-2"
+            style="display: none;">
             <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">home</span>
             RETURN TO HOME
           </button>
@@ -615,72 +771,107 @@
 
     <div id="hud" class="absolute inset-0">
       <div class="absolute left-6 flex items-center gap-3" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
-        <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-lap">LAP: 1 / 3</div>
-        <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-position">POS: 1 / 4</div>
-        <button id="btn-settings-hud" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:rotate-45 transition-transform" style="pointer-events: auto;">
+        <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]"
+          id="hud-lap">LAP: 1 / 3</div>
+        <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]"
+          id="hud-position">POS: 1 / 4</div>
+        <button id="btn-settings-hud"
+          class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:rotate-45 transition-transform"
+          style="pointer-events: auto;">
           <span class="material-symbols-outlined text-primary text-2xl">settings</span>
         </button>
-        <button id="btn-pause" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:scale-110 transition-transform active:scale-95" style="pointer-events: auto;" title="Pause (ESC)">
-          <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+        <button id="btn-pause"
+          class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:scale-110 transition-transform active:scale-95"
+          style="pointer-events: auto;" title="Pause (ESC)">
+          <span class="material-symbols-outlined text-secondary text-2xl"
+            style="font-variation-settings: 'FILL' 1;">pause</span>
         </button>
       </div>
-      <div class="absolute right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
+      <div
+        class="absolute right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]"
+        id="hud-time" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
         TIME: 00:00.00<br>
         <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
       </div>
       <!-- HUD Coins & Booster Bar -->
-      <div id="hud-booster-wrapper" class="absolute left-6 flex flex-col gap-3" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">
+      <div id="hud-booster-wrapper" class="absolute left-6 flex flex-col gap-3"
+        style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">
         <!-- Booster Bar -->
-        <div class="bg-surface card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex flex-col gap-2 clickable animate-none" id="hud-booster-container" style="pointer-events: auto;">
+        <div
+          class="bg-surface card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex flex-col gap-2 clickable animate-none"
+          id="hud-booster-container" style="pointer-events: auto;">
           <div class="flex justify-between items-center text-xs font-bold text-on-surface">
             <span>BOOSTER BAR</span>
             <span id="hud-booster-status" class="text-on-surface-variant opacity-60">EMPTY</span>
           </div>
           <!-- 3 segments representing 3 Solana coins -->
           <div class="flex gap-2 w-[180px]">
-            <div id="booster-seg-1" class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
+            <div id="booster-seg-1"
+              class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
               <img src="solana.svg" class="h-5 w-5 drop-shadow-[0_0_4px_rgba(0,255,163,0.5)]" alt="Solana Bubble">
             </div>
-            <div id="booster-seg-2" class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
+            <div id="booster-seg-2"
+              class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
               <img src="solana.svg" class="h-5 w-5 drop-shadow-[0_0_4px_rgba(0,255,163,0.5)]" alt="Solana Bubble">
             </div>
-            <div id="booster-seg-3" class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
+            <div id="booster-seg-3"
+              class="flex-1 h-8 bg-surface border-2 border-on-surface rounded-lg flex items-center justify-center transition-all duration-300 opacity-30 scale-95">
               <img src="solana.svg" class="h-5 w-5 drop-shadow-[0_0_4px_rgba(0,255,163,0.5)]" alt="Solana Bubble">
             </div>
           </div>
           <div class="text-[9px] text-center text-on-surface-variant font-bold">SPACE / CLICK TO BOOST</div>
         </div>
       </div>
-      <button class="clickable absolute left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container card-outline rounded-xl px-4 py-2 font-label-sm shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="btn-reset" type="button" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">RESET GAME (R)</button>
-      <div class="absolute right-6 bg-secondary-container text-white card-outline rounded-2xl px-5 py-3 font-headline-lg text-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-speed" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">0 km/h</div>
+      <button
+        class="clickable absolute left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container card-outline rounded-xl px-4 py-2 font-label-sm shadow-[0_4px_0_0_rgba(0,0,0,0.2)]"
+        id="btn-reset" type="button" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">RESET GAME
+        (R)</button>
+      <div
+        class="absolute right-6 bg-secondary-container text-white card-outline rounded-2xl px-5 py-3 font-headline-lg text-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.2)]"
+        id="hud-speed" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">0 km/h</div>
     </div>
 
-    <div id="results-screen" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(420px,92vw)] bg-surface card-outline rounded-[32px] p-8 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.2)]">
+    <div id="results-screen"
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(420px,92vw)] bg-surface card-outline rounded-[32px] p-8 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.2)]">
       <h2 id="results-title" class="font-display-hero text-headline-lg text-primary mb-6 uppercase">Finish!</h2>
       <div class="space-y-3 mb-8 font-title-md">
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Result:</span><span id="res-rank" class="font-bold text-secondary">--</span></div>
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Total Time:</span><span id="res-total-time">--:--.--</span></div>
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Best Lap:</span><span id="res-best-time">--:--.--</span></div>
-        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>SOL Coins:</span><span id="res-coins">0 / 5</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Result:</span><span id="res-rank"
+            class="font-bold text-secondary">--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Total Time:</span><span
+            id="res-total-time">--:--.--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>Best Lap:</span><span
+            id="res-best-time">--:--.--</span></div>
+        <div class="flex justify-between border-b-2 border-on-surface/10 pb-2"><span>SOL Coins:</span><span
+            id="res-coins">0 / 5</span></div>
         <div class="flex justify-between"><span>Total Score:</span><span id="res-score">0</span></div>
       </div>
-      <button id="btn-replay" type="button" class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">PLAY AGAIN</button>
+      <button id="btn-replay" type="button"
+        class="clickable w-full btn-3d-press bg-tertiary-fixed text-on-tertiary-fixed font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)]">PLAY
+        AGAIN</button>
     </div>
 
     <!-- Pause Screen -->
-    <div id="pause-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/60" style="display:none;">
-      <div class="bg-surface card-outline rounded-[32px] p-10 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] text-center">
-        <div class="w-20 h-20 mx-auto mb-6 bg-secondary rounded-full border-4 border-on-surface flex items-center justify-center shadow-[0_6px_0_0_rgba(0,0,0,0.2)]">
-          <span class="material-symbols-outlined text-white text-5xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+    <div id="pause-screen" class="absolute inset-0 flex flex-col justify-center items-center bg-black/60"
+      style="display:none;">
+      <div
+        class="bg-surface card-outline rounded-[32px] p-10 w-[min(380px,90vw)] shadow-[0_12px_0_0_rgba(0,0,0,0.25)] text-center">
+        <div
+          class="w-20 h-20 mx-auto mb-6 bg-secondary rounded-full border-4 border-on-surface flex items-center justify-center shadow-[0_6px_0_0_rgba(0,0,0,0.2)]">
+          <span class="material-symbols-outlined text-white text-5xl"
+            style="font-variation-settings: 'FILL' 1;">pause</span>
         </div>
         <h2 class="font-display-hero text-headline-lg text-primary mb-8 uppercase tracking-wide">Paused</h2>
         <div class="flex flex-col gap-4">
-          <button id="btn-resume" type="button" class="clickable w-full btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
-            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+          <button id="btn-resume" type="button"
+            class="clickable w-full btn-3d-press bg-secondary text-white font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-2xl"
+              style="font-variation-settings: 'FILL' 1;">play_arrow</span>
             RESUME
           </button>
-          <button id="btn-restart" type="button" class="clickable w-full btn-3d-press bg-primary-container text-on-primary-container font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
-            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">restart_alt</span>
+          <button id="btn-restart" type="button"
+            class="clickable w-full btn-3d-press bg-primary-container text-on-primary-container font-headline-lg py-4 rounded-2xl border-4 border-on-surface shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-3">
+            <span class="material-symbols-outlined text-2xl"
+              style="font-variation-settings: 'FILL' 1;">restart_alt</span>
             RESTART RACE
           </button>
         </div>
@@ -700,55 +891,79 @@
     </div>
 
     <!-- ===== CHARACTER SELECT SCREEN ===== -->
-    <div id="character-select-screen" class="fixed inset-0 z-[200] flex-col" style="display:none;background:linear-gradient(135deg,#06060f 0%,#0d0620 50%,#060c1a 100%);">
+    <div id="character-select-screen" class="fixed inset-0 z-[200] flex-col"
+      style="display:none;background:linear-gradient(135deg,#06060f 0%,#0d0620 50%,#060c1a 100%);">
       <!-- Subtle grid bg -->
-      <div aria-hidden="true" style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;"></div>
+      <div aria-hidden="true"
+        style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;">
+      </div>
       <!-- Ambient color glow (changes with selection) -->
-      <div id="cs-bg-glow" aria-hidden="true" style="position:absolute;top:40%;left:30%;width:600px;height:480px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:background 0.5s;background:radial-gradient(ellipse,rgba(255,64,64,0.09) 0%,transparent 68%);"></div>
+      <div id="cs-bg-glow" aria-hidden="true"
+        style="position:absolute;top:40%;left:30%;width:600px;height:480px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:background 0.5s;background:radial-gradient(ellipse,rgba(255,64,64,0.09) 0%,transparent 68%);">
+      </div>
 
       <!-- HEADER -->
-      <div id="cs-header" style="display:flex;align-items:center;justify-content:space-between;padding: calc(16px + var(--ogp-safe-top-inset, 0px)) 28px 16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
-        <button id="btn-char-back" class="clickable" style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.55);font-weight:700;font-size:0.88rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;">
+      <div id="cs-header"
+        style="display:flex;align-items:center;justify-content:space-between;padding: calc(16px + var(--ogp-safe-top-inset, 0px)) 28px 16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
+        <button id="btn-char-back" class="clickable"
+          style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.55);font-weight:700;font-size:0.88rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;">
           <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
           BACK
         </button>
         <div style="text-align:center;">
-          <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1rem,2.5vw,1.6rem);color:#fff;text-transform:uppercase;letter-spacing:0.12em;">⚡ CHOOSE YOUR RACER</div>
-          <div style="color:rgba(255,255,255,0.35);font-size:0.68rem;font-weight:700;letter-spacing:0.2em;margin-top:2px;">SELECT CHARACTER + KART COMBO</div>
+          <div
+            style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1rem,2.5vw,1.6rem);color:#fff;text-transform:uppercase;letter-spacing:0.12em;">
+            ⚡ CHOOSE YOUR RACER</div>
+          <div
+            style="color:rgba(255,255,255,0.35);font-size:0.68rem;font-weight:700;letter-spacing:0.2em;margin-top:2px;">
+            SELECT CHARACTER + KART COMBO</div>
         </div>
-        <button id="btn-char-race" class="clickable btn-3d-press" style="display:flex;align-items:center;gap:10px;background:#ffe016;color:#000;font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(0.85rem,1.5vw,1.1rem);padding:12px 26px;border-radius:999px;border:3px solid rgba(0,0,0,0.85);box-shadow:0 6px 0 0 rgba(0,0,0,0.55);letter-spacing:0.05em;cursor:pointer;white-space:nowrap;transition:transform 0.15s;">
+        <button id="btn-char-race" class="clickable btn-3d-press"
+          style="display:flex;align-items:center;gap:10px;background:#ffe016;color:#000;font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(0.85rem,1.5vw,1.1rem);padding:12px 26px;border-radius:999px;border:3px solid rgba(0,0,0,0.85);box-shadow:0 6px 0 0 rgba(0,0,0,0.55);letter-spacing:0.05em;cursor:pointer;white-space:nowrap;transition:transform 0.15s;">
           <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">flag</span>
           RACE!
         </button>
       </div>
 
       <!-- BODY: Preview + Card Grid -->
-      <div id="cs-body-container" style="flex:1;display:flex;flex-wrap:wrap;gap:28px;padding:20px 28px;overflow:auto;position:relative;z-index:1;align-items:center;justify-content:center;">
+      <div id="cs-body-container"
+        style="flex:1;display:flex;flex-wrap:wrap;gap:28px;padding:20px 28px;overflow:auto;position:relative;z-index:1;align-items:center;justify-content:center;">
 
         <!-- LEFT: 2D PREVIEW -->
-        <div id="cs-preview-container" style="flex:1;min-width:240px;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:28px;">
-          <div style="position:relative;width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,0.07) 0%,transparent 65%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 60px rgba(0,0,0,0.5);">
-            <img id="char-preview-img" style="width:100%;height:100%;object-fit:contain;display:block;transform:translateY(8px) scale(1.28);" src="/char1.png" alt="Character Preview">
-            <div id="cs-glow-ring" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:74%;height:38px;border-radius:50%;filter:blur(20px);opacity:0.55;background:#ff4040;pointer-events:none;transition:background 0.4s;"></div>
+        <div id="cs-preview-container"
+          style="flex:1;min-width:240px;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:28px;">
+          <div
+            style="position:relative;width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,0.07) 0%,transparent 65%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 60px rgba(0,0,0,0.5);">
+            <img id="char-preview-img"
+              style="width:100%;height:100%;object-fit:contain;display:block;transform:translateY(8px) scale(1.28);"
+              src="/char1.png" alt="Character Preview">
+            <div id="cs-glow-ring"
+              style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:74%;height:38px;border-radius:50%;filter:blur(20px);opacity:0.55;background:#ff4040;pointer-events:none;transition:background 0.4s;">
+            </div>
           </div>
           <div style="text-align:center;padding:0 8px;">
-            <div id="cs-char-name" style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1.3rem,3vw,1.9rem);color:#ff4040;text-transform:uppercase;letter-spacing:0.08em;transition:color 0.35s;">CAPY SPEED</div>
-            <div id="cs-char-label" style="color:rgba(255,255,255,0.38);font-size:0.75rem;font-weight:700;letter-spacing:0.18em;margin-top:4px;">RACER #1 • AGGRESSIVE STYLE</div>
+            <div id="cs-char-name"
+              style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1.3rem,3vw,1.9rem);color:#ff4040;text-transform:uppercase;letter-spacing:0.08em;transition:color 0.35s;">
+              CAPY SPEED</div>
+            <div id="cs-char-label"
+              style="color:rgba(255,255,255,0.38);font-size:0.75rem;font-weight:700;letter-spacing:0.18em;margin-top:4px;">
+              RACER #1 • AGGRESSIVE STYLE</div>
           </div>
         </div>
 
         <!-- RIGHT: CHARACTER CARD CAROUSEL (injected by JS) -->
-        <div style="flex:1;min-width:280px;max-width:500px;display:flex;align-items:center;justify-content:center;gap:20px;position:relative;">
+        <div
+          style="flex:1;min-width:280px;max-width:500px;display:flex;align-items:center;justify-content:center;gap:20px;position:relative;">
           <!-- Left Arrow -->
           <button id="btn-char-prev" class="cs-arrow-btn clickable" aria-label="Previous Character">
             <span class="material-symbols-outlined" style="font-size:28px;user-select:none;">chevron_left</span>
           </button>
-          
+
           <!-- Selected Card Holder -->
           <div id="cs-char-card-holder" style="flex:1;max-width:300px;display:flex;justify-content:center;">
             <!-- Single Active Card dynamically injected by JS -->
           </div>
-          
+
           <!-- Right Arrow -->
           <button id="btn-char-next" class="cs-arrow-btn clickable" aria-label="Next Character">
             <span class="material-symbols-outlined" style="font-size:28px;user-select:none;">chevron_right</span>
@@ -761,21 +976,26 @@
     <!-- Mobile Controls Overlay -->
     <div id="mobile-controls" class="absolute inset-0 pointer-events-none hidden touch-none" style="z-index: 60;">
       <!-- Left Side: Steering Controls -->
-      <div class="absolute left-4 flex gap-3 pointer-events-auto select-none touch-none" style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
-        <button id="btn-steer-left" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
+      <div class="absolute left-4 flex gap-3 pointer-events-auto select-none touch-none"
+        style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
+        <button id="btn-steer-left"
+          class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_back</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">LEFT</span>
         </button>
-        <button id="btn-steer-right" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
+        <button id="btn-steer-right"
+          class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_forward</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">RIGHT</span>
         </button>
       </div>
 
       <!-- Right Side: Gas / Brake Pedals & Booster Controls -->
-      <div class="absolute right-4 flex gap-4 items-end pointer-events-auto select-none touch-none" style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
+      <div class="absolute right-4 flex gap-4 items-end pointer-events-auto select-none touch-none"
+        style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
         <!-- Brake Pedal -->
-        <button id="btn-acc-down" class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)] touch-none">
+        <button id="btn-acc-down"
+          class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_downward</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">BRAKE</span>
         </button>
@@ -783,13 +1003,16 @@
         <!-- Gas & Booster Column -->
         <div class="flex flex-col gap-3 items-center touch-none">
           <!-- Booster Button (Placed directly above GAS) -->
-          <button id="btn-mobile-boost" class="relative w-14 h-14 bg-gradient-to-tr from-purple-700/60 to-pink-500/60 backdrop-blur-md border-2 border-white/60 rounded-full flex flex-col items-center justify-center shadow-[0_0_15px_rgba(153,69,255,0.5)] active:scale-90 active:from-purple-600/80 active:to-pink-400/80 transition-all touch-none">
-            <span class="material-symbols-outlined text-white text-2xl animate-pulse" style="font-variation-settings: 'FILL' 1;">bolt</span>
+          <button id="btn-mobile-boost"
+            class="relative w-14 h-14 bg-gradient-to-tr from-purple-700/60 to-pink-500/60 backdrop-blur-md border-2 border-white/60 rounded-full flex flex-col items-center justify-center shadow-[0_0_15px_rgba(153,69,255,0.5)] active:scale-90 active:from-purple-600/80 active:to-pink-400/80 transition-all touch-none">
+            <span class="material-symbols-outlined text-white text-2xl animate-pulse"
+              style="font-variation-settings: 'FILL' 1;">bolt</span>
             <span class="text-[8px] text-white/90 font-bold uppercase tracking-wider -mt-0.5">BOOST</span>
           </button>
 
           <!-- Gas Pedal -->
-          <button id="btn-acc-up" class="w-14 h-20 bg-black/45 backdrop-blur-md border-2 border-tertiary-container/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-tertiary-container/30 active:border-tertiary-container transition-all shadow-[0_0_12px_rgba(201,169,0,0.2)] touch-none">
+          <button id="btn-acc-up"
+            class="w-14 h-20 bg-black/45 backdrop-blur-md border-2 border-tertiary-container/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-tertiary-container/30 active:border-tertiary-container transition-all shadow-[0_0_12px_rgba(201,169,0,0.2)] touch-none">
             <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_upward</span>
             <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">GAS</span>
           </button>
@@ -811,4 +1034,5 @@
     });
   </script>
 </body>
+
 </html>
