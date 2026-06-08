@@ -886,6 +886,9 @@ function compareRacers(a: Vehicle, b: Vehicle, waypoints: THREE.Vector3[]): numb
  * Memulai balapan
  */
 function startRace() {
+  // Clear focus from active button to prevent Spacebar triggering it again
+  (document.activeElement as HTMLElement)?.blur();
+
   hideLandingPage();
   (document.getElementById('hud') as HTMLDivElement).style.display = 'block';
   controls.setVisible(true);
@@ -1362,7 +1365,8 @@ document.getElementById('hud-booster-container')?.addEventListener('click', () =
   triggerPlayerBoost();
 });
 
-document.getElementById('btn-reset')?.addEventListener('click', () => {
+document.getElementById('btn-reset')?.addEventListener('click', (e) => {
+  (e.currentTarget as HTMLElement)?.blur();
   startRace();
 });
 
@@ -1382,6 +1386,10 @@ function resumeGame() {
   currentState = 'RACING';
   pauseScreen.style.display = 'none';
   controls.setVisible(true);
+
+  // Clear focus from active button to prevent Spacebar triggering it again
+  (document.activeElement as HTMLElement)?.blur();
+
   if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.85);
 }
 
