@@ -518,37 +518,37 @@
     <!-- ===== END CHARACTER SELECT ===== -->
 
     <!-- Mobile Controls Overlay -->
-    <div id="mobile-controls" class="absolute inset-0 pointer-events-none hidden" style="z-index: 60;">
+    <div id="mobile-controls" class="absolute inset-0 pointer-events-none hidden touch-none" style="z-index: 60;">
       <!-- Left Side: Steering Controls -->
-      <div class="absolute bottom-4 left-4 flex gap-3 pointer-events-auto select-none">
-        <button id="btn-steer-left" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)]">
+      <div class="absolute bottom-4 left-4 flex gap-3 pointer-events-auto select-none touch-none">
+        <button id="btn-steer-left" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_back</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">LEFT</span>
         </button>
-        <button id="btn-steer-right" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)]">
+        <button id="btn-steer-right" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_forward</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">RIGHT</span>
         </button>
       </div>
 
       <!-- Right Side: Gas / Brake Pedals & Booster Controls -->
-      <div class="absolute bottom-4 right-4 flex gap-4 items-end pointer-events-auto select-none">
+      <div class="absolute bottom-4 right-4 flex gap-4 items-end pointer-events-auto select-none touch-none">
         <!-- Brake Pedal -->
-        <button id="btn-acc-down" class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)]">
+        <button id="btn-acc-down" class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_downward</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">BRAKE</span>
         </button>
 
         <!-- Gas & Booster Column -->
-        <div class="flex flex-col gap-3 items-center">
+        <div class="flex flex-col gap-3 items-center touch-none">
           <!-- Booster Button (Placed directly above GAS) -->
-          <button id="btn-mobile-boost" class="relative w-14 h-14 bg-gradient-to-tr from-purple-700/60 to-pink-500/60 backdrop-blur-md border-2 border-white/60 rounded-full flex flex-col items-center justify-center shadow-[0_0_15px_rgba(153,69,255,0.5)] active:scale-90 active:from-purple-600/80 active:to-pink-400/80 transition-all">
+          <button id="btn-mobile-boost" class="relative w-14 h-14 bg-gradient-to-tr from-purple-700/60 to-pink-500/60 backdrop-blur-md border-2 border-white/60 rounded-full flex flex-col items-center justify-center shadow-[0_0_15px_rgba(153,69,255,0.5)] active:scale-90 active:from-purple-600/80 active:to-pink-400/80 transition-all touch-none">
             <span class="material-symbols-outlined text-white text-2xl animate-pulse" style="font-variation-settings: 'FILL' 1;">bolt</span>
             <span class="text-[8px] text-white/90 font-bold uppercase tracking-wider -mt-0.5">BOOST</span>
           </button>
 
           <!-- Gas Pedal -->
-          <button id="btn-acc-up" class="w-14 h-20 bg-black/45 backdrop-blur-md border-2 border-tertiary-container/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-tertiary-container/30 active:border-tertiary-container transition-all shadow-[0_0_12px_rgba(201,169,0,0.2)]">
+          <button id="btn-acc-up" class="w-14 h-20 bg-black/45 backdrop-blur-md border-2 border-tertiary-container/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-tertiary-container/30 active:border-tertiary-container transition-all shadow-[0_0_12px_rgba(201,169,0,0.2)] touch-none">
             <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_upward</span>
             <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">GAS</span>
           </button>

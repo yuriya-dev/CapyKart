@@ -57,16 +57,29 @@ export class Controls {
       const btn = document.getElementById(id);
       if (!btn) return;
 
-      const setPressed = (pressed: boolean, e: Event) => {
+      const activePointers = new Set<number>();
+
+      btn.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        onPress(pressed);
+        btn.setPointerCapture(e.pointerId);
+        activePointers.add(e.pointerId);
+        onPress(true);
+      });
+
+      const release = (e: PointerEvent) => {
+        if (activePointers.has(e.pointerId)) {
+          e.stopPropagation();
+          e.preventDefault();
+          activePointers.delete(e.pointerId);
+          if (activePointers.size === 0) {
+            onPress(false);
+          }
+        }
       };
 
-      btn.addEventListener('pointerdown', (e) => setPressed(true, e));
-      btn.addEventListener('pointerup', (e) => setPressed(false, e));
-      btn.addEventListener('pointercancel', (e) => setPressed(false, e));
-      btn.addEventListener('pointerleave', (e) => setPressed(false, e));
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
       
       // Prevent context menus on long press on mobile
       btn.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -80,14 +93,25 @@ export class Controls {
     // 2. Setup Booster Button
     const btnMobileBoost = document.getElementById('btn-mobile-boost');
     if (btnMobileBoost) {
-      const triggerBoost = (e: Event) => {
+      const activeBoosterPointers = new Set<number>();
+      btnMobileBoost.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
         e.preventDefault();
+        btnMobileBoost.setPointerCapture(e.pointerId);
+        activeBoosterPointers.add(e.pointerId);
         if (this.onBoosterPressed) {
           this.onBoosterPressed();
         }
+      });
+      const releaseBooster = (e: PointerEvent) => {
+        if (activeBoosterPointers.has(e.pointerId)) {
+          e.stopPropagation();
+          e.preventDefault();
+          activeBoosterPointers.delete(e.pointerId);
+        }
       };
-      btnMobileBoost.addEventListener('pointerdown', triggerBoost);
+      btnMobileBoost.addEventListener('pointerup', releaseBooster);
+      btnMobileBoost.addEventListener('pointercancel', releaseBooster);
       btnMobileBoost.addEventListener('contextmenu', (e) => e.preventDefault());
     }
   }
@@ -139,23 +163,25 @@ export class Controls {
     }
 
     // 3. Touch Controls Input (Buttons)
-    let bx = 0;
-    let bz = 0;
-    if (this.buttonLeft) bx -= 1;
-    if (this.buttonRight) bx += 1;
-    if (this.buttonUp) bz += 1;
-    if (this.buttonDown) bz -= 1;
+    const steerBtnActive = this.buttonLeft || this.buttonRight;
+    if (steerBtnActive) {
+      let bx = 0;
+      if (this.buttonLeft) bx -= 1;
+      if (this.buttonRight) bx += 1;
+      x = bx;
+    }
+
+    const accBtnActive = this.buttonUp || this.buttonDown;
+    if (accBtnActive) {
+      let bz = 0;
+      if (this.buttonUp) bz += 1;
+      if (this.buttonDown) bz -= 1;
+      z = bz;
+    }
 
     // Keep touchActive as false for button mode so Vehicle.ts utilizes keyboard controls (relative steer)
     // which is way smoother for discrete/digital inputs.
     this.touchActive = false;
-
-    // Overwrite input values only if mobile buttons are pressed
-    const mobileBtnActive = this.buttonLeft || this.buttonRight || this.buttonUp || this.buttonDown;
-    if (mobileBtnActive) {
-      x = bx;
-      z = bz;
-    }
 
     this.x = x;
     this.z = z;
