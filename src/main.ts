@@ -779,6 +779,9 @@ async function loadAssets() {
 
     // 5. Siapkan Kontrol
     controls = new Controls();
+    controls.onBoosterPressed = () => {
+      triggerPlayerBoost();
+    };
 
     progressFill.style.width = '100%';
     setTimeout(() => {
@@ -856,6 +859,7 @@ function compareRacers(a: Vehicle, b: Vehicle, waypoints: THREE.Vector3[]): numb
 function startRace() {
   hideLandingPage();
   (document.getElementById('hud') as HTMLDivElement).style.display = 'block';
+  controls.setVisible(true);
 
   currentState = 'COUNTDOWN';
   countdownTimer = 10.0;
@@ -935,6 +939,7 @@ function startRace() {
 function finishRace() {
   currentState = 'FINISHED';
   (document.getElementById('hud') as HTMLDivElement).style.display = 'none';
+  controls.setVisible(false);
 
   const resultsScreen = document.getElementById('results-screen') as HTMLDivElement;
   resultsScreen.style.display = 'block';
@@ -1317,6 +1322,7 @@ function pauseGame() {
   if (currentState !== 'RACING') return;
   currentState = 'PAUSED';
   pauseScreen.style.display = 'flex';
+  controls.setVisible(false);
   if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.3);
 }
 
@@ -1324,6 +1330,7 @@ function resumeGame() {
   if (currentState !== 'PAUSED') return;
   currentState = 'RACING';
   pauseScreen.style.display = 'none';
+  controls.setVisible(true);
   if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.85);
 }
 

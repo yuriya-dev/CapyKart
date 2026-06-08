@@ -240,6 +240,66 @@
     #btn-char-back:hover  { color:#fff !important; background:rgba(255,255,255,0.12) !important; }
     #btn-char-race:hover  { transform:scale(1.04); }
     #btn-char-race:active { transform:translateY(4px); box-shadow:0 0px 0 0 rgba(0,0,0,0.5) !important; }
+
+    /* Shift and scale down HUD elements when mobile controls are visible */
+    .mobile-active #hud-booster-wrapper {
+      bottom: auto !important;
+      top: 12px !important;
+      right: 156px !important;
+      left: auto !important;
+      transform: scale(0.75) !important;
+      transform-origin: top right !important;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .mobile-active #hud-speed {
+      bottom: 190px !important;
+      right: 16px !important;
+      transform: scale(0.75) !important;
+      transform-origin: bottom right !important;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .mobile-active #btn-reset {
+      bottom: 16px !important;
+      transform: translateX(-50%) scale(0.75) !important;
+      transform-origin: bottom center !important;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .mobile-active #hud > div:first-child {
+      top: 12px !important;
+      left: 12px !important;
+      transform: scale(0.75) !important;
+      transform-origin: top left !important;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .mobile-active #hud-time {
+      top: 12px !important;
+      right: 12px !important;
+      transform: scale(0.75) !important;
+      transform-origin: top right !important;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* General Mobile Viewport UI Scaling */
+    @media (max-width: 768px) {
+      #results-screen {
+        transform: translate(-50%, -50%) scale(0.8) !important;
+        transform-origin: center center !important;
+      }
+      #pause-screen > div {
+        transform: scale(0.8) !important;
+        transform-origin: center center !important;
+      }
+      #settings-modal > div {
+        transform: scale(0.8) !important;
+        transform-origin: center center !important;
+      }
+      #character-select-screen {
+        font-size: 0.9rem !important;
+      }
+      #character-select-screen header {
+        padding: 8px 16px !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-background font-body-base text-on-surface selection:bg-secondary-container">
@@ -281,7 +341,7 @@
           </div>
           <div class="lg:w-1/2 flex justify-center mt-16 lg:mt-0 relative">
             <div class="absolute inset-0 bg-secondary-container rounded-full opacity-20 blur-3xl scale-110 animate-pulse"></div>
-            <img alt="Capybara Mascot" class="w-full max-w-[600px] relative z-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500" src="./public/capy_kart_arena_logo.svg">
+            <img alt="Capybara Mascot" class="w-full max-w-[600px] relative z-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500" src="/capy_kart_arena_logo.svg">
             <div class="absolute -top-10 -left-10 opacity-40 animate-pulse">
               <span class="material-symbols-outlined text-white text-8xl rotate-12">flag</span>
             </div>
@@ -291,114 +351,7 @@
           </div>
         </div>
       </section>
-
-      <!-- <div class="max-w-[1440px] mx-auto px-container-padding py-16 lg:py-24">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <section class="lg:col-span-7">
-            <div class="flex items-center justify-between mb-8">
-              <h2 class="font-headline-lg text-headline-lg uppercase">Kart Garage</h2>
-              <div class="flex gap-4">
-                <button class="w-12 h-12 bg-white card-outline rounded-full flex items-center justify-center btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.1)] clickable" type="button">
-                  <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button class="w-12 h-12 bg-white card-outline rounded-full flex items-center justify-center btn-3d-press shadow-[0_4px_0_0_rgba(0,0,0,0.1)] clickable" type="button">
-                  <span class="material-symbols-outlined">chevron_right</span>
-                </button>
-              </div>
-            </div>
-            <div class="bg-surface-container card-outline rounded-[40px] p-6 lg:p-10 shadow-[0_12px_0_0_rgba(0,0,0,0.1)]">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white card-outline rounded-3xl p-8 flex flex-col items-center justify-center transition-transform hover:rotate-1">
-                  <span class="bg-tertiary-fixed text-on-tertiary-fixed px-4 py-1.5 rounded-full text-title-md font-label-sm mb-6 border-4 border-on-surface shadow-[4px_4px_0_0_rgba(0,0,0,1)] uppercase">New!</span>
-                  <div class="w-48 h-48 mb-6">
-                    <img alt="Classic Kart Preview" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLvxfiL_DTSFLGLbcnRZPgpiFdvU_fJ3szoC_RotpW_qEJ8MN1r1rMxgiuMMwPruW7PV6IsF-QJcSoqIhvZDp8jbg2e4-aUMll6jpQQ1U0rXAXfIMuwa5WEDvieNwhqEIQXIl39pzLUbFKLYmPLb1ecPCgdQhSJqdBLsPINMSbssM7MQ2Rmg4IBzQwrg-GLSk9k_HkKE22r-_PKIDAtSKghV59u9Kj9PkCrAikE2QEtwX87rv_Q5gwSPZKgG">
-                  </div>
-                  <p class="font-headline-lg-mobile text-headline-lg-mobile mb-4">CLASSIC CAPY</p>
-                  <div class="flex gap-3">
-                    <div class="w-6 h-6 rounded-full bg-primary border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
-                    <div class="w-6 h-6 rounded-full bg-secondary-container border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
-                    <div class="w-6 h-6 rounded-full bg-surface-variant border-2 border-on-surface shadow-[2px_2px_0_0_rgba(0,0,0,1)]"></div>
-                  </div>
-                </div>
-                <div class="flex flex-col justify-center space-y-6">
-                  <div class="bg-white card-outline rounded-2xl p-6">
-                    <h4 class="font-title-md text-primary mb-2">SPEED</h4>
-                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
-                      <div class="h-full bg-primary w-[85%] border-r-2 border-on-surface"></div>
-                    </div>
-                  </div>
-                  <div class="bg-white card-outline rounded-2xl p-6">
-                    <h4 class="font-title-md text-secondary mb-2">HANDLING</h4>
-                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
-                      <div class="h-full bg-secondary w-[60%] border-r-2 border-on-surface"></div>
-                    </div>
-                  </div>
-                  <div class="bg-white card-outline rounded-2xl p-6">
-                    <h4 class="font-title-md text-tertiary mb-2">DRIFT</h4>
-                    <div class="h-6 w-full bg-surface-container rounded-full overflow-hidden border-2 border-on-surface">
-                      <div class="h-full bg-tertiary w-[95%] border-r-2 border-on-surface"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="lg:col-span-5 flex flex-col justify-center">
-            <div class="bg-surface-variant card-outline rounded-[40px] p-8 lg:p-12 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.1)] relative overflow-hidden group">
-              <div class="glossy-overlay absolute inset-0 opacity-10"></div>
-              <div class="relative z-10">
-                <div class="w-32 h-32 mx-auto mb-8 bg-tertiary-fixed rounded-full border-4 border-on-surface flex items-center justify-center shadow-[0_8px_0_0_rgba(0,0,0,0.2)] transform group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-on-tertiary-fixed text-6xl" style="font-variation-settings: 'FILL' 1;">currency_bitcoin</span>
-                </div>
-                <h2 class="font-display-hero text-headline-lg mb-4 text-on-surface">GET YOUR $CAPYRACE</h2>
-                <p class="font-body-base text-title-md mb-10 text-on-surface-variant max-w-sm mx-auto">
-                  The ultimate utility token for the Capy Kart ecosystem. Unlock rare skins, entry into premium tournaments, and more!
-                </p>
-                <div class="flex flex-col gap-6">
-                  <button class="clickable bg-secondary text-white font-headline-lg py-6 rounded-3xl card-outline btn-3d-press shadow-[0_8px_0_0_rgba(0,0,0,0.3)] flex items-center justify-center gap-4 group/btn" type="button">
-                    <span class="relative z-10">BUY ON RAYDIUM</span>
-                    <span class="material-symbols-outlined text-4xl group-hover/btn:translate-x-2 transition-transform">arrow_forward</span>
-                  </button>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white card-outline rounded-2xl py-4">
-                      <span class="block font-label-sm text-on-surface-variant opacity-60">PRICE</span>
-                      <span class="font-title-md">$0.042</span>
-                    </div>
-                    <div class="bg-white card-outline rounded-2xl py-4">
-                      <span class="block font-label-sm text-on-surface-variant opacity-60">MCAP</span>
-                      <span class="font-title-md">$24.5M</span>
-                    </div>
-                  </div>
-                  <div class="mt-8 flex justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
-                    <div class="w-40 h-12 bg-on-surface rounded-xl flex items-center justify-center cursor-pointer clickable">
-                      <span class="text-white text-sm font-bold uppercase tracking-widest">DexScreener</span>
-                    </div>
-                    <div class="w-40 h-12 bg-on-surface rounded-xl flex items-center justify-center cursor-pointer clickable">
-                      <span class="text-white text-sm font-bold uppercase tracking-widest">Solscan</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div> -->
     </main>
-
-    <!-- <footer class="border-t-4 border-on-surface bg-surface-container py-12">
-      <div class="max-w-[1440px] mx-auto px-container-padding flex flex-col md:flex-row justify-between items-center gap-8">
-        <div class="flex flex-col items-center md:items-start">
-          <span class="font-headline-lg-mobile text-on-surface">Capy Kart Arena</span>
-          <p class="font-label-sm text-on-surface-variant">© 2026 Capy Kart Arena. All rights reserved.</p>
-        </div>
-        <div class="flex gap-8">
-          <a class="font-title-md hover:text-primary transition-colors" href="#">Twitter</a>
-          <a class="font-title-md hover:text-secondary transition-colors" href="#">Discord</a>
-          <a class="font-title-md hover:text-tertiary transition-colors" href="#">Whitepaper</a>
-        </div>
-      </div>
-    </footer> -->
   </div>
 
   <div id="ui-container">
@@ -448,7 +401,7 @@
         <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
       </div>
       <!-- HUD Coins & Booster Bar -->
-      <div class="absolute bottom-6 left-6 flex flex-col gap-3">
+      <div id="hud-booster-wrapper" class="absolute bottom-6 left-6 flex flex-col gap-3">
         <!-- Booster Bar -->
         <div class="bg-surface card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex flex-col gap-2 clickable animate-none" id="hud-booster-container" style="pointer-events: auto;">
           <div class="flex justify-between items-center text-xs font-bold text-on-surface">
@@ -563,6 +516,45 @@
       </div>
     </div>
     <!-- ===== END CHARACTER SELECT ===== -->
+
+    <!-- Mobile Controls Overlay -->
+    <div id="mobile-controls" class="absolute inset-0 pointer-events-none hidden" style="z-index: 60;">
+      <!-- Left Side: Steering Controls -->
+      <div class="absolute bottom-4 left-4 flex gap-3 pointer-events-auto select-none">
+        <button id="btn-steer-left" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)]">
+          <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_back</span>
+          <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">LEFT</span>
+        </button>
+        <button id="btn-steer-right" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)]">
+          <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_forward</span>
+          <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">RIGHT</span>
+        </button>
+      </div>
+
+      <!-- Right Side: Gas / Brake Pedals & Booster Controls -->
+      <div class="absolute bottom-4 right-4 flex gap-4 items-end pointer-events-auto select-none">
+        <!-- Brake Pedal -->
+        <button id="btn-acc-down" class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)]">
+          <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_downward</span>
+          <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">BRAKE</span>
+        </button>
+
+        <!-- Gas & Booster Column -->
+        <div class="flex flex-col gap-3 items-center">
+          <!-- Booster Button (Placed directly above GAS) -->
+          <button id="btn-mobile-boost" class="relative w-14 h-14 bg-gradient-to-tr from-purple-700/60 to-pink-500/60 backdrop-blur-md border-2 border-white/60 rounded-full flex flex-col items-center justify-center shadow-[0_0_15px_rgba(153,69,255,0.5)] active:scale-90 active:from-purple-600/80 active:to-pink-400/80 transition-all">
+            <span class="material-symbols-outlined text-white text-2xl animate-pulse" style="font-variation-settings: 'FILL' 1;">bolt</span>
+            <span class="text-[8px] text-white/90 font-bold uppercase tracking-wider -mt-0.5">BOOST</span>
+          </button>
+
+          <!-- Gas Pedal -->
+          <button id="btn-acc-up" class="w-14 h-20 bg-black/45 backdrop-blur-md border-2 border-tertiary-container/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-tertiary-container/30 active:border-tertiary-container transition-all shadow-[0_0_12px_rgba(201,169,0,0.2)]">
+            <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_upward</span>
+            <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">GAS</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
   </div>
 

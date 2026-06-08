@@ -1,7 +1,7 @@
 /**
  * src/core/Controls.ts
  *
- * Menangani input dari Keyboard (WASD / Panah), Gamepad, dan Virtual Joystick di Mobile
+ * Menangani input dari Keyboard (WASD / Panah), Gamepad, dan Virtual Buttons di Mobile
  * untuk mengendalikan kemudi (X) dan akselerasi/rem (Z).
  */
 
@@ -17,12 +17,17 @@ export class Controls {
   public z = 0;
   public touchActive = false;
 
-  // Joystick touch state
-  private steerPointerId: number | null = null;
-  private steerStartX = 0;
-  private steerStartY = 0;
-  private touchDirX = 0;
-  private touchDirY = 0;
+  // Button inputs
+  private buttonLeft = false;
+  private buttonRight = false;
+  private buttonUp = false;
+  private buttonDown = false;
+
+  // Callback for booster
+  public onBoosterPressed: (() => void) | null = null;
+
+  // DOM Elements references
+  private containerEl: HTMLElement | null = null;
 
   constructor() {
     window.addEventListener('keydown', (e) => {
@@ -33,122 +38,74 @@ export class Controls {
       this.keys[e.code] = false;
     });
 
-    this.setupTouchUI();
+    // Jalankan setup setelah DOM siap
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupTouchUI());
+    } else {
+      this.setupTouchUI();
+    }
   }
 
   private setupTouchUI() {
-    if (!('ontouchstart' in window) && !navigator.maxTouchPoints) return;
+    const container = document.getElementById('mobile-controls');
+    if (!container) return;
 
-    // Tambahkan style untuk virtual joystick
-    const css = document.createElement('style');
-    css.textContent = `
-      .touch-controls {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 100;
-      }
-      .steer-zone {
-        position: absolute;
-        inset: 0;
-        pointer-events: auto;
-        touch-action: none;
-      }
-      .steer-base {
-        position: absolute;
-        width: 120px;
-        height: 120px;
-        margin: -60px 0 0 -60px;
-        border-radius: 50%;
-        background: rgba(20, 241, 149, 0.1); /* Solana Green transparent */
-        border: 2px solid rgba(0, 194, 255, 0.3); /* Solana Teal */
-        box-shadow: 0 0 15px rgba(0, 194, 255, 0.2);
-        display: none;
-        backdrop-filter: blur(4px);
-      }
-      .steer-knob {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 50px;
-        height: 50px;
-        margin: -25px 0 0 -25px;
-        border-radius: 50%;
-        background: rgba(153, 69, 255, 0.6); /* Solana Purple */
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 0 8px rgba(153, 69, 255, 0.8);
-      }
-    `;
-    document.head.appendChild(css);
+    this.containerEl = container;
 
-    const container = document.createElement('div');
-    container.className = 'touch-controls';
+    // 1. Setup Navigation Buttons Event Listeners
+    const bindButton = (id: string, onPress: (pressed: boolean) => void) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
 
-    const steerZone = document.createElement('div');
-    steerZone.className = 'steer-zone';
+      const setPressed = (pressed: boolean, e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onPress(pressed);
+      };
 
-    const base = document.createElement('div');
-    base.className = 'steer-base';
-    
-    const knob = document.createElement('div');
-    knob.className = 'steer-knob';
-    
-    base.appendChild(knob);
-    steerZone.appendChild(base);
-    container.appendChild(steerZone);
-    document.body.appendChild(container);
-
-    const steerRange = 40;
-
-    steerZone.addEventListener('pointerdown', (e) => {
-      // Hanya terima input jika pointer ID kosong
-      if (this.steerPointerId !== null) return;
+      btn.addEventListener('pointerdown', (e) => setPressed(true, e));
+      btn.addEventListener('pointerup', (e) => setPressed(false, e));
+      btn.addEventListener('pointercancel', (e) => setPressed(false, e));
+      btn.addEventListener('pointerleave', (e) => setPressed(false, e));
       
-      steerZone.setPointerCapture(e.pointerId);
-      this.steerPointerId = e.pointerId;
-      this.steerStartX = e.clientX;
-      this.steerStartY = e.clientY;
-      this.touchActive = true;
-      this.touchDirX = 0;
-      this.touchDirY = 0;
-      
-      base.style.left = `${e.clientX}px`;
-      base.style.top = `${e.clientY}px`;
-      base.style.display = 'block';
-    });
-
-    steerZone.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== this.steerPointerId) return;
-      
-      let dx = (e.clientX - this.steerStartX) / steerRange;
-      let dy = (e.clientY - this.steerStartY) / steerRange;
-      const mag = Math.sqrt(dx * dx + dy * dy);
-
-      if (mag > 1) {
-        dx /= mag;
-        dy /= mag;
-      }
-
-      this.touchDirX = dx;
-      this.touchDirY = dy;
-      
-      // Gerakkan knob dalam batas bundaran base (60px radius base)
-      knob.style.transform = `translate(${this.touchDirX * 35}px, ${this.touchDirY * 35}px)`;
-    });
-
-    const endSteer = (e: PointerEvent) => {
-      if (e.pointerId !== this.steerPointerId) return;
-      
-      this.steerPointerId = null;
-      this.touchActive = false;
-      this.touchDirX = 0;
-      this.touchDirY = 0;
-      knob.style.transform = '';
-      base.style.display = 'none';
+      // Prevent context menus on long press on mobile
+      btn.addEventListener('contextmenu', (e) => e.preventDefault());
     };
 
-    steerZone.addEventListener('pointerup', endSteer);
-    steerZone.addEventListener('pointercancel', endSteer);
+    bindButton('btn-steer-left', (pressed) => { this.buttonLeft = pressed; });
+    bindButton('btn-steer-right', (pressed) => { this.buttonRight = pressed; });
+    bindButton('btn-acc-up', (pressed) => { this.buttonUp = pressed; });
+    bindButton('btn-acc-down', (pressed) => { this.buttonDown = pressed; });
+
+    // 2. Setup Booster Button
+    const btnMobileBoost = document.getElementById('btn-mobile-boost');
+    if (btnMobileBoost) {
+      const triggerBoost = (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (this.onBoosterPressed) {
+          this.onBoosterPressed();
+        }
+      };
+      btnMobileBoost.addEventListener('pointerdown', triggerBoost);
+      btnMobileBoost.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+  }
+
+  public setVisible(visible: boolean) {
+    if (!this.containerEl) return;
+    
+    // Check touch capabilities
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const hud = document.getElementById('hud');
+
+    if (visible && isTouch) {
+      this.containerEl.classList.remove('hidden');
+      if (hud) hud.classList.add('mobile-active');
+    } else {
+      this.containerEl.classList.add('hidden');
+      if (hud) hud.classList.remove('mobile-active');
+    }
   }
 
   public update(): InputState {
@@ -181,18 +138,23 @@ export class Controls {
       break; // Hanya baca gamepad pertama yang aktif
     }
 
-    // 3. Touch Joystick Input (dirotasikan sesuai kamera serong)
-    if (this.touchActive) {
-      const jx = this.touchDirX;
-      const jy = this.touchDirY;
-      const mag = Math.sqrt(jx * jx + jy * jy);
+    // 3. Touch Controls Input (Buttons)
+    let bx = 0;
+    let bz = 0;
+    if (this.buttonLeft) bx -= 1;
+    if (this.buttonRight) bx += 1;
+    if (this.buttonUp) bz += 1;
+    if (this.buttonDown) bz -= 1;
 
-      if (mag > 0.15) {
-        // Rotasikan arah joystick 45 derajat agar arah atas joystick
-        // menggerakkan kart serong kanan-atas (sesuai perspektif kamera serong)
-        x = (jx + jy) * Math.SQRT1_2 / mag;
-        z = (-jx + jy) * Math.SQRT1_2 / mag;
-      }
+    // Keep touchActive as false for button mode so Vehicle.ts utilizes keyboard controls (relative steer)
+    // which is way smoother for discrete/digital inputs.
+    this.touchActive = false;
+
+    // Overwrite input values only if mobile buttons are pressed
+    const mobileBtnActive = this.buttonLeft || this.buttonRight || this.buttonUp || this.buttonDown;
+    if (mobileBtnActive) {
+      x = bx;
+      z = bz;
     }
 
     this.x = x;
