@@ -258,15 +258,44 @@ function selectCharacter(idx: number) {
 
 function showCharacterSelect() {
   hideLandingPage();
-  const screen = document.getElementById('character-select-screen') as HTMLDivElement;
-  if (screen) screen.style.display = 'flex';
+  const charSelectScreen = document.getElementById('character-select-screen') as HTMLDivElement;
+  if (charSelectScreen) charSelectScreen.style.display = 'flex';
+  document.body.classList.add('game-started');
+
+  // Attempt to enter fullscreen and lock orientation to landscape on mobile devices
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0);
+  if (isMobile) {
+    const docEl = document.documentElement;
+    const requestFS = docEl.requestFullscreen || (docEl as any).webkitRequestFullscreen || (docEl as any).mozRequestFullScreen || (docEl as any).msRequestFullscreen;
+    if (requestFS) {
+      requestFS.call(docEl).then(() => {
+        if (window.screen.orientation && (window.screen.orientation as any).lock) {
+          (window.screen.orientation as any).lock('landscape').catch((err: any) => {
+            console.warn('Screen orientation lock failed:', err);
+          });
+        }
+      }).catch((err: any) => {
+        console.warn('Fullscreen request failed:', err);
+      });
+    }
+  }
+
   buildCharCards();
   selectCharacter(selectedCharacterIdx);
 }
 
 function hideCharacterSelect() {
-  const screen = document.getElementById('character-select-screen') as HTMLDivElement;
-  if (screen) screen.style.display = 'none';
+  const charSelectScreen = document.getElementById('character-select-screen') as HTMLDivElement;
+  if (charSelectScreen) charSelectScreen.style.display = 'none';
+  document.body.classList.remove('game-started');
+
+  // Exit fullscreen if active when returning to main home page
+  if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+    const exitFS = document.exitFullscreen || (document as any).webkitExitFullscreen || (document as any).mozCancelFullScreen || (document as any).msExitFullscreen;
+    if (exitFS) {
+      exitFS.call(document).catch((err: any) => console.warn(err));
+    }
+  }
 }
 
 // Fungsi Format Waktu
@@ -1415,8 +1444,47 @@ function updateVolumeIcon(vol: number) {
   }
 }
 
-btnSettings?.addEventListener('click', openSettings);
-btnSettingsHud?.addEventListener('click', openSettings);
+function returnToHome() {
+  closeSettings();
+  
+  // Hide HUD, results, pause screens
+  const hud = document.getElementById('hud');
+  if (hud) hud.style.display = 'none';
+  
+  const results = document.getElementById('results-screen');
+  if (results) results.style.display = 'none';
+  
+  const pause = document.getElementById('pause-screen');
+  if (pause) pause.style.display = 'none';
+  
+  // Hide character select if open
+  hideCharacterSelect();
+  
+  // Reset game state
+  currentState = 'MENU';
+  showLandingPage();
+  
+  // Disable vehicle controls
+  controls.setVisible(false);
+  
+  // Stop sounds
+  if (engineSound && engineSound.isPlaying) engineSound.stop();
+  if (skidSound && skidSound.isPlaying) skidSound.stop();
+}
+
+btnSettings?.addEventListener('click', () => {
+  const btnHome = document.getElementById('btn-settings-home');
+  if (btnHome) btnHome.style.display = 'none';
+  openSettings();
+});
+
+btnSettingsHud?.addEventListener('click', () => {
+  const btnHome = document.getElementById('btn-settings-home');
+  if (btnHome) btnHome.style.display = 'flex';
+  openSettings();
+});
+
+document.getElementById('btn-settings-home')?.addEventListener('click', returnToHome);
 btnSettingsClose?.addEventListener('click', closeSettings);
 btnSettingsSave?.addEventListener('click', () => {
   if (volumeSlider) {
