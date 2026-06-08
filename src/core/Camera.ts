@@ -11,13 +11,14 @@ import * as THREE from 'three';
 export class FollowCamera {
   public camera: THREE.PerspectiveCamera;
 
-  // Offset dasar untuk Third-Person Camera
-  private followDistance = 7.0; // Jarak di belakang kendaraan
-  private followHeight = 2.8;   // Ketinggian di atas kendaraan
-  private lookHeight = 1.0;     // Ketinggian titik fokus tatapan
+  // Offset dasar untuk Third-Person Camera (dekatkan ke karakter)
+  private followDistance = 4.2; // Jarak di belakang kendaraan
+  private followHeight = 1.6;   // Ketinggian di atas kendaraan
+  private lookHeight = 0.6;     // Ketinggian titik fokus tatapan
   private cameraSmoothing = 5.0; // Kecepatan lerp mengikuti kart
 
   private initialized = false;
+  private boostDistanceMultiplier = 1.0;
 
   private orbitYaw = 0;
   private orbitPitch = 0;
@@ -28,7 +29,7 @@ export class FollowCamera {
   private introDuration = 5.0;
 
   constructor() {
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     
     // Posisi awal kamera
     this.camera.position.set(0, 10, 15);
@@ -112,7 +113,7 @@ export class FollowCamera {
    * @param speed Kecepatan linier kart
    * @param isAccelerating Apakah pemain sedang menekan gas
    */
-  public update(dt: number, target: THREE.Vector3, quaternion: THREE.Quaternion, speed: number, isAccelerating: boolean) {
+  public update(dt: number, target: THREE.Vector3, quaternion: THREE.Quaternion, speed: number, isAccelerating: boolean, isBoosting = false) {
     // Jalankan auto-orbit intro jika aktif
     if (this.introActive) {
       this.introTime += dt;
@@ -146,10 +147,23 @@ export class FollowCamera {
       if (Math.abs(this.orbitPitch) < 0.001) this.orbitPitch = 0;
     }
 
+    // Lerp camera FOV: 60 base, 75 when boosting
+    const targetFov = isBoosting ? 75 : 60;
+    this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, targetFov, dt * 8.0);
+    this.camera.updateProjectionMatrix();
+
     // 3. Hitung jarak dan tinggi dinamis berdasarkan kecepatan (efek tarikan kamera saat cepat)
     const speedRatio = THREE.MathUtils.clamp(Math.abs(speed) / 2.5, 0, 1);
-    const dynamicDistance = this.followDistance + speedRatio * 1.5;
-    const dynamicHeight = this.followHeight + speedRatio * 0.3;
+    let dynamicDistance = this.followDistance + speedRatio * 0.4;
+    const dynamicHeight = this.followHeight + speedRatio * 0.1;
+
+    // Lerp dynamic distance multiplier for boosting (moves backward 10%)
+    this.boostDistanceMultiplier = THREE.MathUtils.lerp(
+      this.boostDistanceMultiplier,
+      isBoosting ? 1.1 : 1.0,
+      dt * 8.0
+    );
+    dynamicDistance *= this.boostDistanceMultiplier;
 
     // 4. Hitung posisi lokal kamera relatif terhadap kart dengan rotasi orbit yaw & pitch
     const localPos = new THREE.Vector3(0, dynamicHeight, -dynamicDistance);

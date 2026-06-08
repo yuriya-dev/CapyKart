@@ -455,9 +455,33 @@
         margin-top: 0px !important;
       }
     }
+
+    #boost-wind-blur {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      background: radial-gradient(circle at center, transparent 35%, rgba(0, 224, 255, 0.08) 75%),
+                  repeating-conical-gradient(from 0deg, transparent 0deg, transparent 4deg, rgba(255, 255, 255, 0.45) 5deg, rgba(0, 224, 255, 0.35) 6deg, transparent 8deg);
+      mask-image: radial-gradient(circle, transparent 25%, black 75%);
+      -webkit-mask-image: radial-gradient(circle, transparent 25%, black 75%);
+      transition: opacity 0.2s ease-out;
+    }
+    @keyframes wind-blur-spin {
+      0% { transform: scale(1.0); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1.0); }
+    }
+    #boost-wind-blur.active {
+      opacity: 1 !important;
+      animation: wind-blur-spin 0.08s infinite linear;
+    }
   </style>
 </head>
 <body class="bg-background font-body-base text-on-surface selection:bg-secondary-container">
+  <!-- Nitro Booster Wind Blur Overlay -->
+  <div id="boost-wind-blur"></div>
 
   <div id="landing-page">
     <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky">

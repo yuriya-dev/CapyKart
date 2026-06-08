@@ -525,24 +525,48 @@ function playCoinChime() {
  * Putar suara boost pad (Sintesis gemuruh angin kencang)
  */
 function playBoostWhoosh() {
-  if (boostSound.buffer) {
-    if (boostSound.isPlaying) boostSound.stop();
-    boostSound.play();
-  } else {
-    const ctx = (THREE.AudioContext.getContext() as AudioContext);
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(120, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.5);
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.6);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.65);
+  const ctx = (THREE.AudioContext.getContext() as AudioContext);
+  if (!ctx) return;
+
+  // Synthesize a high-quality wind "whoosh" sound using white noise and a sweep bandpass filter
+  const duration = 1.5;
+  const bufferSize = ctx.sampleRate * duration;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  
+  // Generate white noise
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
   }
+
+  const noiseNode = ctx.createBufferSource();
+  noiseNode.buffer = buffer;
+
+  const filterNode = ctx.createBiquadFilter();
+  filterNode.type = 'bandpass';
+  filterNode.Q.setValueAtTime(2.5, ctx.currentTime);
+
+  // Sweep the bandpass filter frequency to simulate a zooming whoosh
+  filterNode.frequency.setValueAtTime(180, ctx.currentTime);
+  filterNode.frequency.exponentialRampToValueAtTime(1500, ctx.currentTime + 0.35);
+  filterNode.frequency.exponentialRampToValueAtTime(280, ctx.currentTime + duration);
+
+  const gainNode = ctx.createGain();
+  gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0.48, ctx.currentTime + 0.25); // Quick fade-in
+  gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration); // Smooth fade-out
+
+  noiseNode.connect(filterNode);
+  filterNode.connect(gainNode);
+
+  if (audioListener && audioListener.gain) {
+    gainNode.connect(audioListener.gain);
+  } else {
+    gainNode.connect(ctx.destination);
+  }
+
+  noiseNode.start();
+  noiseNode.stop(ctx.currentTime + duration);
 }
 
 /**
@@ -1054,7 +1078,7 @@ function animate() {
     // Perbarui kamera pengikut (pemain bisa orbit sebelum mulai)
     const inputState = controls.update();
     const isAccelerating = inputState.z > 0 || (inputState.touchActive && (inputState.x !== 0 || inputState.z !== 0));
-    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating);
+    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating, vehicle.isBoosting);
 
     // Mesin idling
     if (engineSound.isPlaying) {
@@ -1211,7 +1235,17 @@ function animate() {
 
     // Perbarui kamera pengikut
     const isAccelerating = inputState.z > 0 || (inputState.touchActive && (inputState.x !== 0 || inputState.z !== 0));
-    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating);
+    cameraSystem.update(dt, vehicle.spherePos, vehicle.container.quaternion, vehicle.linearSpeed, isAccelerating, vehicle.isBoosting);
+
+    // Sync wind blur overlay with boosting state
+    const windBlurEl = document.getElementById('boost-wind-blur');
+    if (windBlurEl) {
+      if (vehicle.isBoosting) {
+        windBlurEl.classList.add('active');
+      } else {
+        windBlurEl.classList.remove('active');
+      }
+    }
 
     // Deteksi Ambil Koin SOL
     sceneryData.coins.forEach((coin) => {
