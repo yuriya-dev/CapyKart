@@ -56,6 +56,40 @@ let boosterCharge = 0;
 const MAX_BOOSTER_CHARGE = 3;
 let score = 0;
 
+// Play.fun SDK State
+let sdk: any = null;
+let sdkReady = false;
+
+function initPlayFunSDK() {
+  if (typeof (window as any).OpenGameSDK !== 'undefined') {
+    sdk = new (window as any).OpenGameSDK({
+      ui: { usePointsWidget: true, theme: 'dark' },
+      logLevel: 'info',
+    });
+
+    sdk.on('OnReady', () => {
+      sdkReady = true;
+      console.log('Play.fun SDK Ready!');
+    });
+
+    sdk.on('SavePointsSuccess', () => console.log('Points saved to Play.fun!'));
+    sdk.on('SavePointsFailed', (err: any) => console.error('Play.fun save failed:', err));
+
+    // Pasang pause/resume saat modal/widget SDK aktif
+    sdk.on('GamePause', () => {
+      pauseGame();
+    });
+    sdk.on('GameResume', () => {
+      resumeGame();
+    });
+
+    // Inisialisasi dengan Game ID Anda dari Dashboard Play.fun
+    sdk.init({ gameId: '71fc21cd-0568-45b3-b8e5-ceea6887145b' }); 
+  } else {
+    console.warn('OpenGameSDK is not defined. Make sure the script is loaded.');
+  }
+}
+
 // Flag midpoint untuk mencegah trigger lap terlalu dini (sebelum melewati setengah sirkuit)
 let playerHasPassedMidpoint = false;
 const botHasPassedMidpoint: boolean[] = [];
@@ -985,7 +1019,7 @@ function startRace() {
 /**
  * Menyelesaikan balapan
  */
-function finishRace() {
+async function finishRace() {
   currentState = 'FINISHED';
   (document.getElementById('hud') as HTMLDivElement).style.display = 'none';
   controls.setVisible(false);
@@ -998,7 +1032,8 @@ function finishRace() {
   if (skidSound && skidSound.isPlaying) skidSound.stop();
 
   // Hitung total waktu lap
-  const totalScore = (coinsCollected * 100) + Math.max(0, Math.floor(10000 - totalRaceTime * 10));
+  const timeBonus = Math.max(0, Math.floor(10000 - totalRaceTime * 10));
+  const totalScore = (coinsCollected * 100) + timeBonus;
 
   // Hitung peringkat akhir pemain
   const racers = [vehicle, ...bots];
@@ -1020,6 +1055,18 @@ function finishRace() {
 
   // Play jingle kemenangan
   playVictoryJingle();
+
+  // Kirim skor ke Play.fun
+  if (sdk && sdkReady) {
+    try {
+      if (timeBonus > 0) {
+        sdk.addPoints(timeBonus); // Tambahkan sisa bonus waktu ke poin Play.fun
+      }
+      await sdk.endGame();
+    } catch (e) {
+      console.error('Play.fun endGame error:', e);
+    }
+  }
 }
 
 function playVictoryJingle() {
@@ -1305,6 +1352,9 @@ function animate() {
           coin.visible = false;
           coinsCollected++;
           score += 100;
+          if (sdk && sdkReady) {
+            sdk.addPoints(100);
+          }
 
           if (boosterCharge < MAX_BOOSTER_CHARGE) {
             boosterCharge++;
@@ -1535,5 +1585,6 @@ volumeSlider?.addEventListener('input', () => {
 // Jalankan Persiapan Game
 initRenderer();
 setupAudio();
+initPlayFunSDK();
 loadAssets();
 animate();

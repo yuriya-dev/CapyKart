@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "playdotfun": {
+      "source": "playdotfun/skills",
+      "sourceType": "github",
+      "skillPath": "skills/SKILL.md",
+      "computedHash": "41020def10a9a87f015505871c23457a9f1929477fe622f8be158dde9473e87b"
+    }
+  }
+}
