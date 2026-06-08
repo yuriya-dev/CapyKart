@@ -12,9 +12,9 @@ export class FollowCamera {
   public camera: THREE.PerspectiveCamera;
 
   // Offset dasar untuk Third-Person Camera (dekatkan ke karakter)
-  private followDistance = 4.2; // Jarak di belakang kendaraan
-  private followHeight = 1.6;   // Ketinggian di atas kendaraan
-  private lookHeight = 0.6;     // Ketinggian titik fokus tatapan
+  private followDistance = 3.5; // Jarak di belakang kendaraan (dekatkan 15%)
+  private followHeight = 1.35;  // Ketinggian di atas kendaraan (dekatkan 15%)
+  private lookHeight = 0.5;     // Ketinggian titik fokus tatapan (dekatkan 15%)
   private cameraSmoothing = 5.0; // Kecepatan lerp mengikuti kart
 
   private initialized = false;
