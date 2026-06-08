@@ -60,6 +60,17 @@ let score = 0;
 let playerHasPassedMidpoint = false;
 const botHasPassedMidpoint: boolean[] = [];
 
+// =============================================
+// CHARACTER SELECT — Data & State
+// =============================================
+const CHARACTERS = [
+  { name: 'CAPY SPEED', label: 'RACER #1 \u2022 AGGRESSIVE STYLE', emoji: '\uD83D\uDD34', suit: '/capy_suit_1.png', kart: '/kart1.png', preview: '/char1.png', color: '#ff4040', colorHex: 0xff4040, stats: [4, 3, 2] },
+  { name: 'CAPY WAVE',  label: 'RACER #2 \u2022 SMOOTH STYLE',    emoji: '\uD83D\uDD35', suit: '/capy_suit_2.png', kart: '/kart2.png', preview: '/char2.png', color: '#00aaff', colorHex: 0x00aaff, stats: [3, 4, 3] },
+  { name: 'CAPY ZAP',   label: 'RACER #3 \u2022 ELECTRIC STYLE',  emoji: '\u26A1',        suit: '/capy_suit_3.png', kart: '/kart3.png', preview: '/char3.png', color: '#ffe016', colorHex: 0xffe016, stats: [5, 2, 4] },
+  { name: 'CAPY MOON',  label: 'RACER #4 \u2022 DRIFT MASTER',    emoji: '\uD83C\uDF19', suit: '/capy_suit_4.png', kart: '/kart4.png', preview: '/char4.png', color: '#9945FF', colorHex: 0x9945FF, stats: [3, 5, 5] },
+];
+let selectedCharacterIdx = 0;
+
 // Fungsi beeper untuk countdown
 function playCountdownBeep(isGo: boolean) {
   const ctx = (THREE.AudioContext.getContext() as AudioContext);
@@ -181,6 +192,105 @@ function hideLandingPage() {
   const landing = document.getElementById('landing-page') as HTMLDivElement;
   if (landing) landing.style.display = 'none';
   document.body.style.overflow = 'hidden';
+}
+
+// =============================================
+// CHARACTER SELECT — Functions
+// =============================================
+
+function buildCharCards() {
+  const grid = document.getElementById('cs-char-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const statLabels = ['SPEED', 'HANDLE', 'DRIFT'];
+  CHARACTERS.forEach((char, idx) => {
+    const isSelected = idx === selectedCharacterIdx;
+    const card = document.createElement('div');
+    card.id = `cs-card-${idx}`;
+    card.className = 'cs-char-card';
+    const statBars = char.stats.map((val, si) => `
+      <div style="margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span style="font-size:0.6rem;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:0.1em;">${statLabels[si]}</span>
+          <span style="font-size:0.6rem;color:${char.color};font-weight:700;">${'\u2605'.repeat(val)}${'\u2606'.repeat(5-val)}</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;">
+          <div class="cs-stat-bar-fill" style="height:100%;width:${val*20}%;background:${char.color};border-radius:99px;"></div>
+        </div>
+      </div>
+    `).join('');
+    card.innerHTML = `
+      <div style="font-size:2.4rem;margin-bottom:6px;line-height:1;">${char.emoji}</div>
+      <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:0.88rem;color:${char.color};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">${char.name}</div>
+      <div style="color:rgba(255,255,255,0.32);font-size:0.6rem;font-weight:700;letter-spacing:0.14em;margin-bottom:12px;">RACER #${idx+1}</div>
+      <div style="width:100%;margin-bottom:10px;">${statBars}</div>
+      <div class="cs-selected-badge" ${isSelected ? '' : 'hidden'} style="background:#fff;color:#000;font-size:0.58rem;font-weight:900;padding:3px 14px;border-radius:999px;letter-spacing:0.12em;margin-top:2px;">✓ SELECTED</div>
+    `;
+    const base = `cursor:pointer;border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:all 0.22s cubic-bezier(0.22,1,0.36,1);border:2px solid;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);`;
+    card.style.cssText = base + (isSelected
+      ? `border-color:${char.color};background:${char.color}18;box-shadow:0 0 28px ${char.color}50,inset 0 0 18px ${char.color}10;transform:translateY(-5px) scale(1.02);`
+      : `border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);`);
+    card.addEventListener('click', () => selectCharacter(idx));
+    card.addEventListener('mouseenter', () => {
+      if (idx !== selectedCharacterIdx) { card.style.background = 'rgba(255,255,255,0.08)'; card.style.transform = 'translateY(-5px) scale(1.02)'; }
+    });
+    card.addEventListener('mouseleave', () => {
+      if (idx !== selectedCharacterIdx) { card.style.background = 'rgba(255,255,255,0.04)'; card.style.transform = ''; }
+    });
+    grid.appendChild(card);
+  });
+}
+
+function selectCharacter(idx: number) {
+  selectedCharacterIdx = idx;
+  const char = CHARACTERS[idx];
+  // Update cards
+  CHARACTERS.forEach((c, i) => {
+    const card = document.getElementById(`cs-card-${i}`) as HTMLDivElement | null;
+    if (!card) return;
+    const badge = card.querySelector('.cs-selected-badge') as HTMLElement | null;
+    if (i === idx) {
+      card.style.borderColor = c.color;
+      card.style.background = c.color + '18';
+      card.style.boxShadow = `0 0 28px ${c.color}50, inset 0 0 18px ${c.color}10`;
+      card.style.transform = 'translateY(-5px) scale(1.02)';
+      if (badge) badge.removeAttribute('hidden');
+    } else {
+      card.style.borderColor = 'rgba(255,255,255,0.1)';
+      card.style.background = 'rgba(255,255,255,0.04)';
+      card.style.boxShadow = 'none';
+      card.style.transform = '';
+      if (badge) badge.setAttribute('hidden', '');
+    }
+  });
+  // Update preview info text
+  const nameEl = document.getElementById('cs-char-name');
+  const labelEl = document.getElementById('cs-char-label');
+  const glowEl = document.getElementById('cs-glow-ring');
+  const bgGlow = document.getElementById('cs-bg-glow');
+  if (nameEl) { nameEl.textContent = char.name; (nameEl as HTMLElement).style.color = char.color; }
+  if (labelEl) { labelEl.textContent = char.label; }
+  if (glowEl)  { (glowEl as HTMLElement).style.background = char.color; }
+  if (bgGlow)  { (bgGlow as HTMLElement).style.background = `radial-gradient(ellipse,${char.color}12 0%,transparent 68%)`; }
+  
+  // Update preview image
+  const imgEl = document.getElementById('char-preview-img') as HTMLImageElement | null;
+  if (imgEl) {
+    imgEl.src = char.preview;
+  }
+}
+
+function showCharacterSelect() {
+  hideLandingPage();
+  const screen = document.getElementById('character-select-screen') as HTMLDivElement;
+  if (screen) screen.style.display = 'flex';
+  buildCharCards();
+  selectCharacter(selectedCharacterIdx);
+}
+
+function hideCharacterSelect() {
+  const screen = document.getElementById('character-select-screen') as HTMLDivElement;
+  if (screen) screen.style.display = 'none';
 }
 
 // Fungsi Format Waktu
@@ -613,7 +723,7 @@ async function loadAssets() {
 
     vehicle = new Vehicle();
     const vehicleGroup = vehicle.init(capyGltf);
-    // Apply kart1.png to player vehicle kart body (suit remains default GLB texture)
+    // Apply karakter default (akan di-override saat startRace sesuai pilihan)
     vehicle.setCustomTextures('/capy_suit_1.png', '/kart1.png');
     scene.add(vehicleGroup);
 
@@ -771,6 +881,16 @@ function startRace() {
   vehicle.resetPosition();
   bots.forEach(bot => {
     bot.resetPosition();
+  });
+
+  // Apply tekstur karakter yang dipilih ke player
+  const playerChar = CHARACTERS[selectedCharacterIdx];
+  vehicle.setCustomTextures(playerChar.suit, playerChar.kart);
+
+  // Assign 3 karakter lain ke bot (tidak boleh sama dengan player)
+  const botChars = CHARACTERS.filter((_, i) => i !== selectedCharacterIdx);
+  bots.forEach((bot, i) => {
+    bot.setCustomTextures(botChars[i].suit, botChars[i].kart);
   });
 
   // Tentukan waypoint terdekat secara global saat balapan dimulai
@@ -1163,12 +1283,22 @@ function animate() {
 
 // Handler Tombol Aksi UI
 document.getElementById('btn-play')?.addEventListener('click', () => {
+  showCharacterSelect(); // Tampilkan layar pemilihan karakter dulu
+});
+
+document.getElementById('btn-char-back')?.addEventListener('click', () => {
+  hideCharacterSelect();
+  showLandingPage();
+});
+
+document.getElementById('btn-char-race')?.addEventListener('click', () => {
+  hideCharacterSelect();
   startRace();
 });
 
 document.getElementById('btn-replay')?.addEventListener('click', () => {
   (document.getElementById('results-screen') as HTMLDivElement).style.display = 'none';
-  startRace();
+  showCharacterSelect(); // Pilih karakter lagi sebelum replay
 });
 
 // Listener booster container click (untuk desktop click & mobile tap)

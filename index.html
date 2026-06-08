@@ -216,6 +216,30 @@
     #countdown-text {
       animation: countdown-pulse 1s infinite;
     }
+
+    /* ===== CHARACTER SELECT ===== */
+    @keyframes cs-slide-in {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);    }
+    }
+    #character-select-screen {
+      animation: cs-slide-in 0.38s cubic-bezier(0.22,1,0.36,1) forwards;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      pointer-events: auto;
+    }
+    .cs-char-card {
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      user-select: none;
+    }
+    .cs-char-card:hover  { transform: translateY(-6px) scale(1.02); }
+    .cs-char-card:active { transform: translateY(-2px) scale(0.98); }
+    .cs-stat-bar-fill { transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+    #btn-char-back:hover  { color:#fff !important; background:rgba(255,255,255,0.12) !important; }
+    #btn-char-race:hover  { transform:scale(1.04); }
+    #btn-char-race:active { transform:translateY(4px); box-shadow:0 0px 0 0 rgba(0,0,0,0.5) !important; }
   </style>
 </head>
 <body class="bg-background font-body-base text-on-surface selection:bg-secondary-container">
@@ -493,6 +517,53 @@
       </div>
       <div id="countdown-text" class="font-display-hero text-[8rem] text-white drop-shadow-lg">10</div>
     </div>
+
+    <!-- ===== CHARACTER SELECT SCREEN ===== -->
+    <div id="character-select-screen" class="fixed inset-0 z-[200] flex-col" style="display:none;background:linear-gradient(135deg,#06060f 0%,#0d0620 50%,#060c1a 100%);">
+      <!-- Subtle grid bg -->
+      <div aria-hidden="true" style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;"></div>
+      <!-- Ambient color glow (changes with selection) -->
+      <div id="cs-bg-glow" aria-hidden="true" style="position:absolute;top:40%;left:30%;width:600px;height:480px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:background 0.5s;background:radial-gradient(ellipse,rgba(255,64,64,0.09) 0%,transparent 68%);"></div>
+
+      <!-- HEADER -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
+        <button id="btn-char-back" class="clickable" style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.55);font-weight:700;font-size:0.88rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;">
+          <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+          BACK
+        </button>
+        <div style="text-align:center;">
+          <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1rem,2.5vw,1.6rem);color:#fff;text-transform:uppercase;letter-spacing:0.12em;">⚡ CHOOSE YOUR RACER</div>
+          <div style="color:rgba(255,255,255,0.35);font-size:0.68rem;font-weight:700;letter-spacing:0.2em;margin-top:2px;">SELECT CHARACTER + KART COMBO</div>
+        </div>
+        <button id="btn-char-race" class="clickable btn-3d-press" style="display:flex;align-items:center;gap:10px;background:#ffe016;color:#000;font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(0.85rem,1.5vw,1.1rem);padding:12px 26px;border-radius:999px;border:3px solid rgba(0,0,0,0.85);box-shadow:0 6px 0 0 rgba(0,0,0,0.55);letter-spacing:0.05em;cursor:pointer;white-space:nowrap;transition:transform 0.15s;">
+          <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">flag</span>
+          RACE!
+        </button>
+      </div>
+
+      <!-- BODY: Preview + Card Grid -->
+      <div style="flex:1;display:flex;flex-wrap:wrap;gap:28px;padding:20px 28px;overflow:auto;position:relative;z-index:1;align-items:center;justify-content:center;">
+
+        <!-- LEFT: 2D PREVIEW -->
+        <div style="flex:1;min-width:240px;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:28px;">
+          <div style="position:relative;width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,0.07) 0%,transparent 65%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 60px rgba(0,0,0,0.5);">
+            <img id="char-preview-img" style="width:100%;height:100%;object-fit:contain;display:block;transform:translateY(16px) scale(1.08);" src="/char1.png" alt="Character Preview">
+            <div id="cs-glow-ring" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:74%;height:38px;border-radius:50%;filter:blur(20px);opacity:0.55;background:#ff4040;pointer-events:none;transition:background 0.4s;"></div>
+          </div>
+          <div style="text-align:center;padding:0 8px;">
+            <div id="cs-char-name" style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(1.3rem,3vw,1.9rem);color:#ff4040;text-transform:uppercase;letter-spacing:0.08em;transition:color 0.35s;">CAPY SPEED</div>
+            <div id="cs-char-label" style="color:rgba(255,255,255,0.38);font-size:0.75rem;font-weight:700;letter-spacing:0.18em;margin-top:4px;">RACER #1 • AGGRESSIVE STYLE</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: CHARACTER CARD GRID (injected by JS) -->
+        <div style="flex:1;min-width:280px;max-width:500px;">
+          <div id="cs-char-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ===== END CHARACTER SELECT ===== -->
+
   </div>
 
   <script type="module" src="/src/main.ts"></script>
