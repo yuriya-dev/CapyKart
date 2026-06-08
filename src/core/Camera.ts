@@ -118,11 +118,11 @@ export class FollowCamera {
    * @param speed Kecepatan linier kart
    * @param isAccelerating Apakah pemain sedang menekan gas
    */
-  public update(dt: number, target: THREE.Vector3, quaternion: THREE.Quaternion, speed: number, isAccelerating: boolean, isBoosting = false) {
+  public update(dt: number, target: THREE.Vector3, quaternion: THREE.Quaternion, speed: number, isAccelerating: boolean, isBoosting = false, isMobile = false) {
     // Jalankan auto-orbit intro jika aktif
     if (this.introActive) {
       this.introTime += dt;
-      if (this.introTime >= this.introDuration) {
+      if (this.introTime >= this.introDuration) {a
         this.introActive = false;
         this.orbitYaw = 0;
         this.orbitPitch = 0;
@@ -160,7 +160,7 @@ export class FollowCamera {
     // 3. Hitung jarak dan tinggi dinamis berdasarkan kecepatan (efek tarikan kamera saat cepat)
     const speedRatio = THREE.MathUtils.clamp(Math.abs(speed) / MAX_SPEED, 0, 1);
     let dynamicDistance = this.followDistance + speedRatio * 0.4;
-    const dynamicHeight = this.followHeight + speedRatio * 0.1;
+    let dynamicHeight = this.followHeight + speedRatio * 0.1;
 
     // Lerp dynamic distance multiplier for boosting (moves backward 10%)
     this.boostDistanceMultiplier = THREE.MathUtils.lerp(
@@ -169,6 +169,12 @@ export class FollowCamera {
       dt * 8.0
     );
     dynamicDistance *= this.boostDistanceMultiplier;
+
+    // If mobile, make the camera 20% closer (both height and distance)
+    if (isMobile) {
+      dynamicDistance *= 0.1;
+      dynamicHeight *= 0.1;
+    }
 
     // 4. Hitung posisi lokal kamera relatif terhadap kart dengan rotasi orbit yaw & pitch
     const localPos = new THREE.Vector3(0, dynamicHeight, -dynamicDistance);
@@ -187,7 +193,7 @@ export class FollowCamera {
     this.initialized = true;
 
     // 7. Tentukan titik fokus kamera (sedikit di depan mobil agar jalan di depan terlihat jelas)
-    const lookLocal = new THREE.Vector3(0, this.lookHeight, 2.0);
+    const lookLocal = new THREE.Vector3(0, isMobile ? this.lookHeight * 0.8 : this.lookHeight, 2.0);
     lookLocal.applyQuaternion(orbitQuat); // Putar arah tatapan mengikuti orbit yaw & pitch
     
     const lookTarget = new THREE.Vector3().copy(lookLocal).applyQuaternion(quaternion).add(target);
