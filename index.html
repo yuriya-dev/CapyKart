@@ -527,7 +527,7 @@
   </div>
 
   <div id="landing-page">
-    <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky">
+    <header class="w-full top-0 border-b-4 border-on-surface bg-surface shadow-[0_4px_0_0_rgba(0,0,0,0.2)] z-50 sticky" style="padding-top: var(--ogp-safe-top-inset, 0px);">
       <div class="max-w-[1440px] mx-auto px-container-padding py-4 flex justify-between items-center">
       <!-- Logo -->
         <div class="flex items-center gap-4">
@@ -614,7 +614,7 @@
     </div>
 
     <div id="hud" class="absolute inset-0">
-      <div class="absolute top-6 left-6 flex items-center gap-3">
+      <div class="absolute left-6 flex items-center gap-3" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
         <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-lap">LAP: 1 / 3</div>
         <div class="bg-white card-outline rounded-2xl px-5 py-3 font-title-md shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-position">POS: 1 / 4</div>
         <button id="btn-settings-hud" class="clickable bg-white card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] hover:rotate-45 transition-transform" style="pointer-events: auto;">
@@ -624,12 +624,12 @@
           <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">pause</span>
         </button>
       </div>
-      <div class="absolute top-6 right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time">
+      <div class="absolute right-6 bg-white card-outline rounded-2xl px-5 py-3 font-title-md text-right shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-time" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
         TIME: 00:00.00<br>
         <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
       </div>
       <!-- HUD Coins & Booster Bar -->
-      <div id="hud-booster-wrapper" class="absolute bottom-6 left-6 flex flex-col gap-3">
+      <div id="hud-booster-wrapper" class="absolute left-6 flex flex-col gap-3" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">
         <!-- Booster Bar -->
         <div class="bg-surface card-outline rounded-2xl p-3 shadow-[0_4px_0_0_rgba(0,0,0,0.2)] flex flex-col gap-2 clickable animate-none" id="hud-booster-container" style="pointer-events: auto;">
           <div class="flex justify-between items-center text-xs font-bold text-on-surface">
@@ -651,8 +651,8 @@
           <div class="text-[9px] text-center text-on-surface-variant font-bold">SPACE / CLICK TO BOOST</div>
         </div>
       </div>
-      <button class="clickable absolute bottom-6 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container card-outline rounded-xl px-4 py-2 font-label-sm shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="btn-reset" type="button">RESET GAME (R)</button>
-      <div class="absolute bottom-6 right-6 bg-secondary-container text-white card-outline rounded-2xl px-5 py-3 font-headline-lg text-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-speed">0 km/h</div>
+      <button class="clickable absolute left-1/2 -translate-x-1/2 bg-primary-container text-on-primary-container card-outline rounded-xl px-4 py-2 font-label-sm shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="btn-reset" type="button" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">RESET GAME (R)</button>
+      <div class="absolute right-6 bg-secondary-container text-white card-outline rounded-2xl px-5 py-3 font-headline-lg text-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.2)]" id="hud-speed" style="bottom: calc(1.5rem + var(--ogp-safe-bottom-inset, 0px));">0 km/h</div>
     </div>
 
     <div id="results-screen" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(420px,92vw)] bg-surface card-outline rounded-[32px] p-8 text-center shadow-[0_12px_0_0_rgba(0,0,0,0.2)]">
@@ -707,7 +707,7 @@
       <div id="cs-bg-glow" aria-hidden="true" style="position:absolute;top:40%;left:30%;width:600px;height:480px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:background 0.5s;background:radial-gradient(ellipse,rgba(255,64,64,0.09) 0%,transparent 68%);"></div>
 
       <!-- HEADER -->
-      <div id="cs-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
+      <div id="cs-header" style="display:flex;align-items:center;justify-content:space-between;padding: calc(16px + var(--ogp-safe-top-inset, 0px)) 28px 16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
         <button id="btn-char-back" class="clickable" style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.55);font-weight:700;font-size:0.88rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;">
           <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
           BACK
@@ -761,7 +761,7 @@
     <!-- Mobile Controls Overlay -->
     <div id="mobile-controls" class="absolute inset-0 pointer-events-none hidden touch-none" style="z-index: 60;">
       <!-- Left Side: Steering Controls -->
-      <div class="absolute bottom-4 left-4 flex gap-3 pointer-events-auto select-none touch-none">
+      <div class="absolute left-4 flex gap-3 pointer-events-auto select-none touch-none" style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
         <button id="btn-steer-left" class="w-14 h-14 bg-black/45 backdrop-blur-md border-2 border-secondary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-secondary/30 active:border-secondary transition-all shadow-[0_0_12px_rgba(0,194,255,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_back</span>
           <span class="text-[8px] text-white/70 font-bold uppercase tracking-wider mt-0.5">LEFT</span>
@@ -773,7 +773,7 @@
       </div>
 
       <!-- Right Side: Gas / Brake Pedals & Booster Controls -->
-      <div class="absolute bottom-4 right-4 flex gap-4 items-end pointer-events-auto select-none touch-none">
+      <div class="absolute right-4 flex gap-4 items-end pointer-events-auto select-none touch-none" style="bottom: calc(1rem + var(--ogp-safe-bottom-inset, 0px));">
         <!-- Brake Pedal -->
         <button id="btn-acc-down" class="w-14 h-16 bg-black/45 backdrop-blur-md border-2 border-primary/40 rounded-2xl flex flex-col items-center justify-center active:scale-90 active:bg-primary/30 active:border-primary transition-all shadow-[0_0_12px_rgba(187,19,26,0.2)] touch-none">
           <span class="material-symbols-outlined text-white text-2xl font-bold">arrow_downward</span>
