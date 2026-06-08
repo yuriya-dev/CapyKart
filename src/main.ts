@@ -199,70 +199,46 @@ function hideLandingPage() {
 // =============================================
 
 function buildCharCards() {
-  const grid = document.getElementById('cs-char-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
+  const holder = document.getElementById('cs-char-card-holder');
+  if (!holder) return;
+  holder.innerHTML = '';
+  const idx = selectedCharacterIdx;
+  const char = CHARACTERS[idx];
   const statLabels = ['SPEED', 'HANDLE', 'DRIFT'];
-  CHARACTERS.forEach((char, idx) => {
-    const isSelected = idx === selectedCharacterIdx;
-    const card = document.createElement('div');
-    card.id = `cs-card-${idx}`;
-    card.className = 'cs-char-card';
-    const statBars = char.stats.map((val, si) => `
-      <div style="margin-bottom:6px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-          <span style="font-size:0.6rem;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:0.1em;">${statLabels[si]}</span>
-          <span style="font-size:0.6rem;color:${char.color};font-weight:700;">${'\u2605'.repeat(val)}${'\u2606'.repeat(5-val)}</span>
-        </div>
-        <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;">
-          <div class="cs-stat-bar-fill" style="height:100%;width:${val*20}%;background:${char.color};border-radius:99px;"></div>
-        </div>
+  const statBars = char.stats.map((val, si) => `
+    <div style="margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+        <span style="font-size:0.6rem;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:0.1em;">${statLabels[si]}</span>
+        <span style="font-size:0.6rem;color:${char.color};font-weight:700;">${'\u2605'.repeat(val)}${'\u2606'.repeat(5-val)}</span>
       </div>
-    `).join('');
-    card.innerHTML = `
-      <div style="font-size:2.4rem;margin-bottom:6px;line-height:1;">${char.emoji}</div>
-      <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:0.88rem;color:${char.color};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">${char.name}</div>
-      <div style="color:rgba(255,255,255,0.32);font-size:0.6rem;font-weight:700;letter-spacing:0.14em;margin-bottom:12px;">RACER #${idx+1}</div>
-      <div style="width:100%;margin-bottom:10px;">${statBars}</div>
-      <div class="cs-selected-badge" ${isSelected ? '' : 'hidden'} style="background:#fff;color:#000;font-size:0.58rem;font-weight:900;padding:3px 14px;border-radius:999px;letter-spacing:0.12em;margin-top:2px;">✓ SELECTED</div>
-    `;
-    const base = `cursor:pointer;border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:all 0.22s cubic-bezier(0.22,1,0.36,1);border:2px solid;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);`;
-    card.style.cssText = base + (isSelected
-      ? `border-color:${char.color};background:${char.color}18;box-shadow:0 0 28px ${char.color}50,inset 0 0 18px ${char.color}10;transform:translateY(-5px) scale(1.02);`
-      : `border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);`);
-    card.addEventListener('click', () => selectCharacter(idx));
-    card.addEventListener('mouseenter', () => {
-      if (idx !== selectedCharacterIdx) { card.style.background = 'rgba(255,255,255,0.08)'; card.style.transform = 'translateY(-5px) scale(1.02)'; }
-    });
-    card.addEventListener('mouseleave', () => {
-      if (idx !== selectedCharacterIdx) { card.style.background = 'rgba(255,255,255,0.04)'; card.style.transform = ''; }
-    });
-    grid.appendChild(card);
-  });
+      <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden;">
+        <div class="cs-stat-bar-fill" style="height:100%;width:${val*20}%;background:${char.color};border-radius:99px;"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const card = document.createElement('div');
+  card.id = `cs-card-${idx}`;
+  card.className = 'cs-char-card';
+  card.innerHTML = `
+    <div style="font-size:2.4rem;margin-bottom:6px;line-height:1;">${char.emoji}</div>
+    <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:0.88rem;color:${char.color};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px;">${char.name}</div>
+    <div style="color:rgba(255,255,255,0.32);font-size:0.6rem;font-weight:700;letter-spacing:0.14em;margin-bottom:12px;">RACER #${idx+1}</div>
+    <div style="width:100%;margin-bottom:10px;">${statBars}</div>
+    <div class="cs-selected-badge" style="background:#fff;color:#000;font-size:0.58rem;font-weight:900;padding:3px 14px;border-radius:999px;letter-spacing:0.12em;margin-top:2px;">✓ SELECTED</div>
+  `;
+  const base = `border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:all 0.22s cubic-bezier(0.22,1,0.36,1);border:2px solid;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;box-sizing:border-box;`;
+  card.style.cssText = base + `border-color:${char.color};background:${char.color}18;box-shadow:0 0 28px ${char.color}50,inset 0 0 18px ${char.color}10;transform:scale(1.02);`;
+  holder.appendChild(card);
 }
 
 function selectCharacter(idx: number) {
   selectedCharacterIdx = idx;
   const char = CHARACTERS[idx];
-  // Update cards
-  CHARACTERS.forEach((c, i) => {
-    const card = document.getElementById(`cs-card-${i}`) as HTMLDivElement | null;
-    if (!card) return;
-    const badge = card.querySelector('.cs-selected-badge') as HTMLElement | null;
-    if (i === idx) {
-      card.style.borderColor = c.color;
-      card.style.background = c.color + '18';
-      card.style.boxShadow = `0 0 28px ${c.color}50, inset 0 0 18px ${c.color}10`;
-      card.style.transform = 'translateY(-5px) scale(1.02)';
-      if (badge) badge.removeAttribute('hidden');
-    } else {
-      card.style.borderColor = 'rgba(255,255,255,0.1)';
-      card.style.background = 'rgba(255,255,255,0.04)';
-      card.style.boxShadow = 'none';
-      card.style.transform = '';
-      if (badge) badge.setAttribute('hidden', '');
-    }
-  });
+  
+  // Rebuild the card for the newly selected character
+  buildCharCards();
+
   // Update preview info text
   const nameEl = document.getElementById('cs-char-name');
   const labelEl = document.getElementById('cs-char-label');
@@ -1294,6 +1270,18 @@ document.getElementById('btn-play')?.addEventListener('click', () => {
 document.getElementById('btn-char-back')?.addEventListener('click', () => {
   hideCharacterSelect();
   showLandingPage();
+});
+
+document.getElementById('btn-char-prev')?.addEventListener('click', () => {
+  let newIdx = selectedCharacterIdx - 1;
+  if (newIdx < 0) newIdx = CHARACTERS.length - 1;
+  selectCharacter(newIdx);
+});
+
+document.getElementById('btn-char-next')?.addEventListener('click', () => {
+  let newIdx = selectedCharacterIdx + 1;
+  if (newIdx >= CHARACTERS.length) newIdx = 0;
+  selectCharacter(newIdx);
 });
 
 document.getElementById('btn-char-race')?.addEventListener('click', () => {

@@ -241,6 +241,31 @@
     #btn-char-race:hover  { transform:scale(1.04); }
     #btn-char-race:active { transform:translateY(4px); box-shadow:0 0px 0 0 rgba(0,0,0,0.5) !important; }
 
+    .cs-arrow-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+      flex-shrink: 0;
+    }
+    .cs-arrow-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1), 0 4px 0 rgba(0, 0, 0, 0.35);
+    }
+    .cs-arrow-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 0px 0 0 rgba(0, 0, 0, 0.2) !important;
+    }
+
     /* Shift and scale down HUD elements when mobile controls are visible */
     .mobile-active #hud-booster-wrapper {
       bottom: auto !important;
@@ -298,6 +323,136 @@
       }
       #character-select-screen header {
         padding: 8px 16px !important;
+      }
+    }
+
+    /* Landscape Mobile (Short screens) Layout Overrides */
+    @media (max-height: 600px) {
+      /* Landing Page Header */
+      #landing-page header {
+        padding: 6px 16px !important;
+      }
+      #landing-page header img {
+        height: 36px !important;
+      }
+      #landing-page header span {
+        font-size: 15px !important;
+      }
+      #landing-page header button {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+      }
+
+      /* Landing Page Hero Section */
+      #landing-page section {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+      }
+      #landing-page section > div {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+        gap: 16px !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+      }
+      #landing-page section img {
+        max-width: 200px !important;
+        margin-top: 0 !important;
+      }
+      #landing-page section p {
+        font-size: 13px !important;
+        line-height: 1.1 !important;
+      }
+      #landing-page section .bg-primary-container {
+        margin-bottom: 12px !important;
+        padding: 4px 14px !important;
+      }
+      #btn-play {
+        font-size: 22px !important;
+        padding: 10px 24px !important;
+        border-width: 3px !important;
+        box-shadow: 0 4px 0 0 rgba(0,0,0,0.5) !important;
+      }
+      #landing-page section .material-symbols-outlined {
+        display: none !important;
+      }
+
+      /* Character Select Screen Header */
+      #cs-header {
+        padding: 8px 16px !important;
+      }
+      #cs-header button {
+        padding: 6px 12px !important;
+        font-size: 0.75rem !important;
+        border-radius: 8px !important;
+      }
+
+      /* Character Select Body Container */
+      #cs-body-container {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 16px !important;
+        padding: 8px 16px !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+      }
+
+      /* Character Select Left 2D Preview */
+      #cs-preview-container {
+        margin-top: 0 !important;
+        gap: 8px !important;
+        max-width: 250px !important;
+        min-width: 180px !important;
+      }
+      #cs-preview-container > div:first-child {
+        width: 180px !important;
+        max-height: 180px !important;
+        border-radius: 20px !important;
+      }
+      #cs-glow-ring {
+        height: 12px !important;
+        filter: blur(8px) !important;
+      }
+      #cs-char-name {
+        font-size: 1.1rem !important;
+      }
+      #cs-char-label {
+        font-size: 0.6rem !important;
+        margin-top: 2px !important;
+      }
+
+      /* Character Select Right Carousel */
+      .cs-arrow-btn {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      .cs-arrow-btn span {
+        font-size: 20px !important;
+      }
+      #cs-char-card-holder {
+        max-width: 200px !important;
+      }
+      .cs-char-card {
+        padding: 6px 10px !important;
+        border-radius: 12px !important;
+      }
+      .cs-char-card > div:first-child {
+        font-size: 1.8rem !important;
+        margin-bottom: 2px !important;
+      }
+      .cs-char-card > div:nth-child(3) {
+        margin-bottom: 2px !important;
+      }
+      .cs-char-card > div:nth-child(4) {
+        margin-bottom: 4px !important;
+      }
+      .cs-char-card .cs-selected-badge {
+        font-size: 0.52rem !important;
+        padding: 2px 10px !important;
+        margin-top: 0px !important;
       }
     }
   </style>
@@ -479,7 +634,7 @@
       <div id="cs-bg-glow" aria-hidden="true" style="position:absolute;top:40%;left:30%;width:600px;height:480px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;transition:background 0.5s;background:radial-gradient(ellipse,rgba(255,64,64,0.09) 0%,transparent 68%);"></div>
 
       <!-- HEADER -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
+      <div id="cs-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;z-index:1;flex-shrink:0;">
         <button id="btn-char-back" class="clickable" style="display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.55);font-weight:700;font-size:0.88rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 18px;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;">
           <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
           BACK
@@ -495,12 +650,12 @@
       </div>
 
       <!-- BODY: Preview + Card Grid -->
-      <div style="flex:1;display:flex;flex-wrap:wrap;gap:28px;padding:20px 28px;overflow:auto;position:relative;z-index:1;align-items:center;justify-content:center;">
+      <div id="cs-body-container" style="flex:1;display:flex;flex-wrap:wrap;gap:28px;padding:20px 28px;overflow:auto;position:relative;z-index:1;align-items:center;justify-content:center;">
 
         <!-- LEFT: 2D PREVIEW -->
-        <div style="flex:1;min-width:240px;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:28px;">
+        <div id="cs-preview-container" style="flex:1;min-width:240px;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:28px;">
           <div style="position:relative;width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,0.07) 0%,transparent 65%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 60px rgba(0,0,0,0.5);">
-            <img id="char-preview-img" style="width:100%;height:100%;object-fit:contain;display:block;transform:translateY(16px) scale(1.08);" src="/char1.png" alt="Character Preview">
+            <img id="char-preview-img" style="width:100%;height:100%;object-fit:contain;display:block;transform:translateY(8px) scale(1.28);" src="/char1.png" alt="Character Preview">
             <div id="cs-glow-ring" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:74%;height:38px;border-radius:50%;filter:blur(20px);opacity:0.55;background:#ff4040;pointer-events:none;transition:background 0.4s;"></div>
           </div>
           <div style="text-align:center;padding:0 8px;">
@@ -509,9 +664,22 @@
           </div>
         </div>
 
-        <!-- RIGHT: CHARACTER CARD GRID (injected by JS) -->
-        <div style="flex:1;min-width:280px;max-width:500px;">
-          <div id="cs-char-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;"></div>
+        <!-- RIGHT: CHARACTER CARD CAROUSEL (injected by JS) -->
+        <div style="flex:1;min-width:280px;max-width:500px;display:flex;align-items:center;justify-content:center;gap:20px;position:relative;">
+          <!-- Left Arrow -->
+          <button id="btn-char-prev" class="cs-arrow-btn clickable" aria-label="Previous Character">
+            <span class="material-symbols-outlined" style="font-size:28px;user-select:none;">chevron_left</span>
+          </button>
+          
+          <!-- Selected Card Holder -->
+          <div id="cs-char-card-holder" style="flex:1;max-width:300px;display:flex;justify-content:center;">
+            <!-- Single Active Card dynamically injected by JS -->
+          </div>
+          
+          <!-- Right Arrow -->
+          <button id="btn-char-next" class="cs-arrow-btn clickable" aria-label="Next Character">
+            <span class="material-symbols-outlined" style="font-size:28px;user-select:none;">chevron_right</span>
+          </button>
         </div>
       </div>
     </div>
