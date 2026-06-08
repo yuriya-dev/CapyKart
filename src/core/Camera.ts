@@ -172,8 +172,8 @@ export class FollowCamera {
 
     // If mobile, make the camera 20% closer (both height and distance)
     if (isMobile) {
-      dynamicDistance *= 0.1;
-      dynamicHeight *= 0.1;
+      dynamicDistance *= 0.8;
+      dynamicHeight *= 0.8;
     }
 
     // 4. Hitung posisi lokal kamera relatif terhadap kart dengan rotasi orbit yaw & pitch
