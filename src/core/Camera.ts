@@ -7,6 +7,7 @@
  */
 
 import * as THREE from 'three';
+import { MAX_SPEED } from './Vehicle.ts';
 
 export class FollowCamera {
   public camera: THREE.PerspectiveCamera;
@@ -157,7 +158,7 @@ export class FollowCamera {
     this.camera.updateProjectionMatrix();
 
     // 3. Hitung jarak dan tinggi dinamis berdasarkan kecepatan (efek tarikan kamera saat cepat)
-    const speedRatio = THREE.MathUtils.clamp(Math.abs(speed) / 2.5, 0, 1);
+    const speedRatio = THREE.MathUtils.clamp(Math.abs(speed) / MAX_SPEED, 0, 1);
     let dynamicDistance = this.followDistance + speedRatio * 0.4;
     const dynamicHeight = this.followHeight + speedRatio * 0.1;
 

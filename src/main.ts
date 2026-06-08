@@ -17,7 +17,7 @@ import { updateWorld } from 'crashcat';
 import { buildTrack } from './scene/track/layout.ts';
 import { setupScenery } from './scene/createScene.ts';
 import { initPhysics, createVehicleBody, buildTrackColliders, buildModelColliders } from './physics/world.ts';
-import { Vehicle } from './core/Vehicle.ts';
+import { Vehicle, MAX_SPEED } from './core/Vehicle.ts';
 import { Controls } from './core/Controls.ts';
 import { FollowCamera } from './core/Camera.ts';
 import { MenuCinematic } from './core/MenuCinematic.ts';
@@ -1258,8 +1258,9 @@ function animate() {
 
     // Sinkronisasi suara mesin (Pitch menyesuaikan kecepatan kart)
     if (engineSound.isPlaying) {
-      const speedPct = Math.abs(vehicle.linearSpeed) / 2.5;
-      engineSound.setPlaybackRate(0.8 + speedPct * 1.2);
+      const speedPct = Math.abs(vehicle.linearSpeed) / MAX_SPEED;
+      const soundPct = Math.min(1.4, speedPct);
+      engineSound.setPlaybackRate(0.8 + soundPct * 1.0);
     }
 
     // Sinkronisasi suara rem/drift (skid)
