@@ -52,7 +52,6 @@ let startLinePos = new THREE.Vector3(); // Posisi fisik garis start/finish dari 
 const FINISH_LINE_RADIUS = 6.0; // Radius zona finish line dalam meter (3D)
 let bestLapTime = Infinity;
 let coinsCollected = 0;
-let boosterCharge = 0;
 const MAX_BOOSTER_CHARGE = 3;
 let score = 0;
 
@@ -179,19 +178,21 @@ function updateBoosterUI() {
     }
   });
 
-  if (boosterCharge === 0) {
+  const charge = vehicle ? vehicle.boosterCharge : 0;
+
+  if (charge === 0) {
     statusEl.textContent = "EMPTY";
     statusEl.className = "text-on-surface-variant opacity-60";
-  } else if (boosterCharge === 1) {
+  } else if (charge === 1) {
     statusEl.textContent = "READY (1/3)";
     statusEl.className = "text-[#9945FF] font-bold";
     if (seg1) seg1.className = "flex-1 h-8 bg-[#9945FF]/20 border-[#9945FF] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(153,69,255,0.4)]";
-  } else if (boosterCharge === 2) {
+  } else if (charge === 2) {
     statusEl.textContent = "READY (2/3)";
     statusEl.className = "text-[#14F195] font-bold";
     if (seg1) seg1.className = "flex-1 h-8 bg-[#14F195]/20 border-[#14F195] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(20,241,149,0.4)]";
     if (seg2) seg2.className = "flex-1 h-8 bg-[#14F195]/20 border-[#14F195] border-2 rounded-lg flex items-center justify-center transition-all duration-300 opacity-100 scale-100 shadow-[0_0_8px_rgba(20,241,149,0.4)]";
-  } else if (boosterCharge === 3) {
+  } else if (charge === 3) {
     statusEl.textContent = "FULL!";
     statusEl.className = "text-secondary font-black animate-pulse";
     [seg1, seg2, seg3].forEach(seg => {
@@ -203,15 +204,16 @@ function updateBoosterUI() {
 }
 
 function triggerPlayerBoost() {
-  if (currentState !== 'RACING') return;
-  if (boosterCharge > 0) {
+  if (currentState !== 'RACING' || !vehicle) return;
+  const charge = vehicle.boosterCharge;
+  if (charge > 0) {
     // 1.5 detik durasi per koin
-    const duration = boosterCharge * 1.5;
+    const duration = charge * 1.5;
     vehicle.triggerBoost(duration);
     playBoostWhoosh();
 
     // Reset isi booster
-    boosterCharge = 0;
+    vehicle.boosterCharge = 0;
     updateBoosterUI();
   }
 }
@@ -824,7 +826,7 @@ async function loadAssets() {
     driftMarks = new DriftMarks(scene);
     vehicle.onReset = () => {
       driftMarks.reset();
-      boosterCharge = 0;
+      vehicle.boosterCharge = 0;
       updateBoosterUI();
     };
 
@@ -957,7 +959,10 @@ function startRace() {
   updateCountdownUI(countdownTimer);
 
   coinsCollected = 0;
-  boosterCharge = 0;
+  if (vehicle) vehicle.boosterCharge = 0;
+  bots.forEach(bot => {
+    bot.boosterCharge = 0;
+  });
   score = 0;
   currentLap = 1;
   lapTimer = 0;
@@ -1002,6 +1007,7 @@ function startRace() {
 
   sceneryData.coins.forEach(c => {
     c.visible = true;
+    c.userData.respawnTimer = undefined;
   });
 
   // Update Tampilan HUD Awal
@@ -1252,6 +1258,7 @@ function animate() {
           // Munculkan lagi koin bubble Solana di lintasan saat lap baru
           sceneryData.coins.forEach(c => {
             c.visible = true;
+            c.userData.respawnTimer = undefined;
           });
 
           if (currentLap > TOTAL_LAPS) {
@@ -1269,6 +1276,21 @@ function animate() {
     bots.forEach((bot, botIdx) => {
       const prevIdx = bot.closestWaypointIdx;
       const botInput = calculateBotInput(bot, waypoints);
+
+      // Logika AI Booster: bot memicu booster saat di jalur lurus dengan muatan tersedia
+      if (bot.boosterCharge > 0 && !bot.isBoosting) {
+        const isOnStraight = Math.abs(botInput.x) < 0.25 && botInput.z >= 0.95;
+        if (isOnStraight) {
+          const boostDuration = bot.boosterCharge * 1.5;
+          bot.triggerBoost(boostDuration);
+          bot.boosterCharge = 0;
+          // Mainkan suara boost jika bot cukup dekat dengan player
+          if (vehicle.spherePos.distanceTo(bot.spherePos) < 25) {
+            playBoostWhoosh();
+          }
+        }
+      }
+
       bot.update(dt, botInput);
 
       const closestIdx = bot.closestWaypointIdx;
@@ -1344,25 +1366,54 @@ function animate() {
       }
     }
 
-    // Deteksi Ambil Koin SOL
+    // Deteksi Ambil Koin SOL — player & bots berkompetisi merebut koin
     sceneryData.coins.forEach((coin) => {
-      if (coin.visible) {
-        const dist = vehicle.spherePos.distanceTo(coin.position);
-        if (dist < 1.8) {
+      if (!coin.visible) {
+        // Hitung timer respawn koin: munculkan kembali setelah 10 detik
+        if (coin.userData.respawnTimer !== undefined) {
+          coin.userData.respawnTimer -= dt;
+          if (coin.userData.respawnTimer <= 0) {
+            coin.visible = true;
+            coin.userData.respawnTimer = undefined;
+          }
+        }
+        return;
+      }
+
+      // Cek apakah player mengambil koin
+      const playerDist = vehicle.spherePos.distanceTo(coin.position);
+      if (playerDist < 1.8) {
+        coin.visible = false;
+        coin.userData.respawnTimer = 10.0; // Respawn setelah 10 detik
+        coinsCollected++;
+        score += 100;
+        if (sdk && sdkReady) {
+          sdk.addPoints(100);
+        }
+        if (vehicle.boosterCharge < MAX_BOOSTER_CHARGE) {
+          vehicle.boosterCharge++;
+          updateBoosterUI();
+        }
+        updateCoinsUI();
+        playCoinChime();
+        return; // Koin sudah diambil player, skip cek bot
+      }
+
+      // Cek apakah salah satu bot mengambil koin
+      for (const bot of bots) {
+        if (bot.isFinished) continue;
+        const botDist = bot.spherePos.distanceTo(coin.position);
+        if (botDist < 1.8) {
           coin.visible = false;
-          coinsCollected++;
-          score += 100;
-          if (sdk && sdkReady) {
-            sdk.addPoints(100);
+          coin.userData.respawnTimer = 10.0; // Respawn setelah 10 detik
+          if (bot.boosterCharge < MAX_BOOSTER_CHARGE) {
+            bot.boosterCharge++;
           }
-
-          if (boosterCharge < MAX_BOOSTER_CHARGE) {
-            boosterCharge++;
-            updateBoosterUI();
+          // Mainkan suara whoosh jika bot dekat dengan player
+          if (vehicle.spherePos.distanceTo(bot.spherePos) < 25) {
+            playCoinChime();
           }
-
-          updateCoinsUI();
-          playCoinChime();
+          break; // Hanya 1 bot yang bisa ambil koin ini per frame
         }
       }
     });

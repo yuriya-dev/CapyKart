@@ -65,6 +65,7 @@ export class Vehicle {
   public finishTime = 0;
   private boostTimer = 0;
   public isBoosting = false;
+  public boosterCharge = 0;
 
   constructor() {
     this.container.name = 'player_kart';
