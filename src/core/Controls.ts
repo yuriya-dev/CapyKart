@@ -132,6 +132,17 @@ export class Controls {
     }
   }
 
+  /** Reset all button/input states — call when exiting RACING state to prevent stuck inputs */
+  public reset() {
+    this.buttonLeft = false;
+    this.buttonRight = false;
+    this.buttonUp = false;
+    this.buttonDown = false;
+    this.x = 0;
+    this.z = 0;
+    this.touchActive = false;
+  }
+
   public setVisible(visible: boolean) {
     if (!this.containerEl) return;
     

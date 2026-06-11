@@ -1033,6 +1033,9 @@ async function finishRace() {
   const resultsScreen = document.getElementById('results-screen') as HTMLDivElement;
   resultsScreen.style.display = 'block';
 
+  // Reset semua input kontrol agar tidak ada stuck input setelah balapan selesai
+  controls.reset();
+
   // Matikan suara mesin & rem
   if (engineSound.isPlaying) engineSound.stop();
   if (skidSound && skidSound.isPlaying) skidSound.stop();
@@ -1333,7 +1336,8 @@ function animate() {
     }
 
     // Sinkronisasi suara rem/drift (skid)
-    if (skidSound && skidSound.buffer) {
+    // Guard currentState: finishRace() bisa mengubah state di tengah frame ini
+    if (currentState === 'RACING' && skidSound && skidSound.buffer) {
       const isSkidding = (vehicle.driftIntensity > 0.42 && Math.abs(vehicle.linearSpeed) > 0.2) ||
         (inputState.z < 0 && vehicle.linearSpeed > 0.2);
 
@@ -1496,7 +1500,9 @@ function pauseGame() {
   if (currentState !== 'RACING') return;
   currentState = 'PAUSED';
   pauseScreen.style.display = 'flex';
+  controls.reset();       // Bersihkan stuck input saat pause
   controls.setVisible(false);
+  if (skidSound && skidSound.isPlaying) skidSound.stop(); // Hentikan suara rem saat pause
   if (engineSound && engineSound.isPlaying) engineSound.setPlaybackRate(0.3);
 }
 
