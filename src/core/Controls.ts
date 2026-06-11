@@ -78,8 +78,20 @@ export class Controls {
         }
       };
 
+      // lostpointercapture fires when touch is interrupted by system gestures,
+      // notifications, or finger slides off screen — prevents stuck button state
+      const releaseLostCapture = (e: PointerEvent) => {
+        if (activePointers.has(e.pointerId)) {
+          activePointers.delete(e.pointerId);
+          if (activePointers.size === 0) {
+            onPress(false);
+          }
+        }
+      };
+
       btn.addEventListener('pointerup', release);
       btn.addEventListener('pointercancel', release);
+      btn.addEventListener('lostpointercapture', releaseLostCapture);
       
       // Prevent context menus on long press on mobile
       btn.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -110,8 +122,12 @@ export class Controls {
           activeBoosterPointers.delete(e.pointerId);
         }
       };
+      const releaseBoosterCapture = (e: PointerEvent) => {
+        activeBoosterPointers.delete(e.pointerId);
+      };
       btnMobileBoost.addEventListener('pointerup', releaseBooster);
       btnMobileBoost.addEventListener('pointercancel', releaseBooster);
+      btnMobileBoost.addEventListener('lostpointercapture', releaseBoosterCapture);
       btnMobileBoost.addEventListener('contextmenu', (e) => e.preventDefault());
     }
   }
