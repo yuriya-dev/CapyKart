@@ -22,6 +22,7 @@ import { Controls } from './core/Controls.ts';
 import { FollowCamera } from './core/Camera.ts';
 import { MenuCinematic } from './core/MenuCinematic.ts';
 import { DriftMarks } from './core/DriftMarks.ts';
+import { Minimap } from './core/Minimap.ts';
 
 // State Game
 type GameState = 'LOADING' | 'MENU' | 'COUNTDOWN' | 'RACING' | 'PAUSED' | 'FINISHED';
@@ -41,6 +42,7 @@ let controls: Controls;
 let trackData: ReturnType<typeof buildTrack>;
 let sceneryData: ReturnType<typeof setupScenery>;
 let driftMarks: DriftMarks;
+let minimap: Minimap;
 const menuCinematic = new MenuCinematic();
 
 // Logika Lap & Checkpoints
@@ -865,6 +867,12 @@ async function loadAssets() {
       triggerPlayerBoost();
     };
 
+    // Initialize Minimap
+    const minimapCanvas = document.getElementById('minimap-canvas') as HTMLCanvasElement;
+    if (minimapCanvas) {
+      minimap = new Minimap(minimapCanvas, trackData.waypoints, startLinePos);
+    }
+
     progressFill.style.width = '100%';
     setTimeout(() => {
       const loadScreen = document.getElementById('loading-screen') as HTMLDivElement;
@@ -1445,6 +1453,22 @@ function animate() {
 
   } else if (currentState === 'MENU' || currentState === 'FINISHED' || currentState === 'PAUSED') {
     menuCinematic.update(dt, time, cameraSystem.camera);
+  }
+
+  // Update Minimap
+  if (minimap && currentState !== 'MENU') {
+    const playerColor = CHARACTERS[selectedCharacterIdx].color;
+    const botChars = CHARACTERS.filter((_, i) => i !== selectedCharacterIdx);
+    const botsInfo = bots.map((bot, i) => ({
+      position: bot.spherePos,
+      color: botChars[i].color
+    }));
+    minimap.update(
+      vehicle.spherePos,
+      vehicle.container.quaternion,
+      playerColor,
+      botsInfo
+    );
   }
 
   // Render Scene dengan bloom neon

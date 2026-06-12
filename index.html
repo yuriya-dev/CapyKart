@@ -608,6 +608,46 @@
       animation: wind-blur-spin 0.08s infinite linear;
     }
 
+    /* Minimap Styles */
+    #minimap-container {
+      position: absolute;
+      left: 24px;
+      top: 155px; /* placed below the HUD stats */
+      width: 160px;
+      height: 160px;
+      background: rgba(26, 28, 28, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 4px solid #1a1c1c; /* matches card-outline bold border */
+      border-radius: 24px;
+      box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.25);
+      z-index: 55;
+      pointer-events: none;
+      box-sizing: border-box;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-active #minimap-container {
+      top: calc(75px + var(--ogp-safe-top-inset, 0px)) !important;
+      left: 12px !important;
+      right: auto !important;
+      width: 105px;
+      height: 105px;
+      border-width: 3px;
+      border-radius: 18px;
+      box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.25);
+    }
+
+    #minimap-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     /* Screen rotation overlay for mobile portrait */
     #orientation-warning {
       display: none;
@@ -790,6 +830,10 @@
         id="hud-time" style="top: calc(1.5rem + var(--ogp-safe-top-inset, 0px));">
         TIME: 00:00.00<br>
         <span class="text-sm text-on-surface-variant" id="hud-best-time">BEST: --:--.--</span>
+      </div>
+      <!-- Track Minimap -->
+      <div id="minimap-container">
+        <canvas id="minimap-canvas"></canvas>
       </div>
       <!-- HUD Coins & Booster Bar -->
       <div id="hud-booster-wrapper" class="absolute left-6 flex flex-col gap-3"
