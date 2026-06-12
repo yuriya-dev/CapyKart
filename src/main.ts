@@ -459,13 +459,13 @@ function calculateBotInput(bot: Vehicle, waypoints: THREE.Vector3[]) {
   let gas: number;
   if (turnLoad > 1.2) {
     // Tikungan sangat tajam: melambat signifikan tapi tetap bergerak
-    gas = 0.7;
+    gas = 0.9;
   } else if (turnLoad > 0.7) {
     // Tikungan tajam
-    gas = 0.9;
+    gas = 0.975;
   } else if (turnLoad > 0.4) {
     // Tikungan sedang
-    gas = 0.95;
+    gas = 1.0;
   } else {
     // Trek lurus: kecepatan penuh
     gas = 1.0;
