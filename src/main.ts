@@ -915,9 +915,19 @@ function getRacerProgress(racer: Vehicle, waypoints: THREE.Vector3[]): number {
   const segment = new THREE.Vector3().subVectors(nextWp, currentWp);
   const segmentLength = segment.length();
 
-  // Gunakan (currentLap - 1) agar lap 1 dimulai dari progress 0
+  // Tentukan apakah racer berada di celah "pre-finish"
+  // (indeks waypoint sudah wrap-around ke awal, tetapi belum melewati garis finish fisik)
+  const isPlayer = (racer === vehicle);
+  const passedMidpoint = isPlayer ? playerHasPassedMidpoint : botHasPassedMidpoint[bots.indexOf(racer)];
+  
+  let effectiveLap = racer.currentLap;
+  if (passedMidpoint && idx < wpLength * 0.25) {
+    effectiveLap += 1;
+  }
+
+  // Gunakan (effectiveLap - 1) agar lap 1 dimulai dari progress 0
   // sehingga ranking tidak terbalik di dekat garis finish
-  const lapOffset = (racer.currentLap - 1) * wpLength;
+  const lapOffset = (effectiveLap - 1) * wpLength;
 
   if (segmentLength < 0.001) {
     return lapOffset + idx;
@@ -1312,17 +1322,20 @@ function animate() {
         botHasPassedMidpoint[botIdx] = true;
       }
 
-      if (prevIdx !== closestIdx) {
-        if (prevIdx > totalWps * 0.75 && closestIdx < totalWps * 0.25 && botHasPassedMidpoint[botIdx]) {
-          botHasPassedMidpoint[botIdx] = false;
-          if (!bot.isFinished) {
-            bot.currentLap++;
-            if (bot.currentLap > TOTAL_LAPS) {
-              bot.isFinished = true;
-              bot.finishTime = totalRaceTime;
-            }
+      // Deteksi garis finish berdasarkan jarak fisik ke startLinePos
+      if (!bot.isFinished && botHasPassedMidpoint[botIdx]) {
+        const distToFinish = bot.spherePos.distanceTo(startLinePos);
+        if (distToFinish <= FINISH_LINE_RADIUS) {
+          botHasPassedMidpoint[botIdx] = false; // Reset untuk putaran berikutnya
+          bot.currentLap++;
+          if (bot.currentLap > TOTAL_LAPS) {
+            bot.isFinished = true;
+            bot.finishTime = totalRaceTime;
           }
         }
+      }
+
+      if (prevIdx !== closestIdx) {
         bot.prevWaypointIdx = closestIdx;
       }
     });
